@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install",
+      "Bash(npx playwright:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "WebFetch(domain:flowbite-react.com)",
+      "WebFetch(domain:flowbite.com)",
+      "Bash(pnpm add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
