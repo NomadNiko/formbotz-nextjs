@@ -35,7 +35,7 @@ export const authOptions: AuthOptions = {
         }
 
         return {
-          id: user._id.toString(),
+          id: String(user._id),
           email: user.email,
           name: user.name,
           role: user.role,
@@ -56,7 +56,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = user.role || 'client';
       }
       return token;
     },

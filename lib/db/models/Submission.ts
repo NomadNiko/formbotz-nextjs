@@ -1,7 +1,13 @@
 import mongoose, { Schema, Model, Document } from 'mongoose';
 import { Submission as ISubmission, SubmissionStatus } from '@/types';
 
-export interface SubmissionDocument extends Omit<ISubmission, '_id'>, Document {}
+export interface SubmissionDocument extends Omit<ISubmission, '_id'>, Document {
+  addAnswer(stepId: string, answer: unknown, variableName?: string): Promise<this>;
+  addConversion(stepId: string): Promise<this>;
+  complete(): Promise<this>;
+  abandon(): Promise<this>;
+  recordTimeSpent(stepId: string, seconds: number): Promise<this>;
+}
 
 const StepAnswerSchema = new Schema(
   {
@@ -79,7 +85,7 @@ SubmissionSchema.index({ sessionId: 1 });
 // Methods
 SubmissionSchema.methods.addAnswer = function (
   stepId: string,
-  answer: any,
+  answer: unknown,
   variableName?: string
 ) {
   this.stepHistory.push({
@@ -119,7 +125,7 @@ SubmissionSchema.methods.recordTimeSpent = function (
   seconds: number
 ) {
   const existing = this.metadata.timeSpentPerStep.find(
-    (t: any) => t.stepId === stepId
+    (t: { stepId: string; seconds: number }) => t.stepId === stepId
   );
 
   if (existing) {

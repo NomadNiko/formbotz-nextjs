@@ -102,7 +102,7 @@ export default async function DashboardPage() {
                 1. Create Your First Form
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Click "Create New Form" to start building your conversational form
+                Click &quot;Create New Form&quot; to start building your conversational form
               </p>
             </div>
             <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">

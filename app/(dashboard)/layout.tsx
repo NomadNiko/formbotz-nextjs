@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth/session';
 import DashboardNav from '@/components/dashboard/DashboardNav';
 

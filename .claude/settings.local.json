@@ -7,9 +7,35 @@
       "mcp__playwright__browser_take_screenshot",
       "WebFetch(domain:flowbite-react.com)",
       "WebFetch(domain:flowbite.com)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(pnpm dev:*)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_console_messages",
+      "Bash(pnpm node:*)",
+      "Bash(kill:*)",
+      "mcp__playwright__browser_evaluate",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm start:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(node:*)",
+      "mcp__playwright__browser_press_key",
+      "Bash(pkill:*)",
+      "mcp__playwright__browser_handle_dialog",
+      "Bash(pnpm lint:*)",
+      "Bash(timeout 30 pnpm build:*)",
+      "Bash(npx next lint:*)",
+      "Bash(grep:*)",
+      "mcp__playwright__browser_select_option",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "spinnerTipsEnabled": false
 }

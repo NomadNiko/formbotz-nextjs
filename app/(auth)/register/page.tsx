@@ -48,7 +48,7 @@ export default function RegisterPage() {
 
       // Redirect to login on success
       router.push('/login?registered=true');
-    } catch (err) {
+    } catch (_err) {
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -84,7 +84,7 @@ export default function RegisterPage() {
 
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="name" value="Full Name" />
+                <Label htmlFor="name">Full Name</Label>
               </div>
               <TextInput
                 id="name"
@@ -100,7 +100,7 @@ export default function RegisterPage() {
 
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="email" value="Email" />
+                <Label htmlFor="email">Email</Label>
               </div>
               <TextInput
                 id="email"
@@ -116,7 +116,7 @@ export default function RegisterPage() {
 
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="password" value="Password" />
+                <Label htmlFor="password">Password</Label>
               </div>
               <TextInput
                 id="password"
@@ -127,13 +127,13 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                helperText="At least 8 characters with uppercase, lowercase, and numbers"
               />
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">At least 8 characters with uppercase, lowercase, and numbers</p>
             </div>
 
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="confirmPassword" value="Confirm Password" />
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
               </div>
               <TextInput
                 id="confirmPassword"

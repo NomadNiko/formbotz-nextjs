@@ -57,7 +57,8 @@ UserSchema.index({ email: 1 });
 
 // Prevent password from being returned in queries
 UserSchema.set('toJSON', {
-  transform: function (doc, ret) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transform: function (_doc, ret: any) {
     delete ret.passwordHash;
     return ret;
   },

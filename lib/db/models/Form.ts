@@ -10,7 +10,12 @@ import {
   LogicalOperator,
 } from '@/types';
 
-export interface FormDocument extends Omit<IForm, '_id'>, Document {}
+export interface FormDocument extends Omit<IForm, '_id'>, Document {
+  incrementViews(): Promise<this>;
+  incrementStarts(): Promise<this>;
+  incrementCompletions(): Promise<this>;
+  updateCompletionRate(): Promise<this>;
+}
 
 // Sub-schemas
 const MediaItemSchema = new Schema(

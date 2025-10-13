@@ -32,7 +32,7 @@ export default function LoginPage() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="email" value="Email" />
+                <Label htmlFor="email">Email</Label>
               </div>
               <TextInput
                 id="email"
@@ -76,7 +76,7 @@ export default function LoginPage() {
 
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="password" value="Password" />
+                <Label htmlFor="password">Password</Label>
               </div>
               <TextInput
                 id="password"
@@ -94,7 +94,7 @@ export default function LoginPage() {
             </Button>
 
             <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link
                 href="/register"
                 className="font-medium text-blue-600 hover:underline dark:text-blue-500"
