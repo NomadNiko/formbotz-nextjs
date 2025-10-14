@@ -130,6 +130,7 @@ const InputConfigSchema = new Schema(
       type: String,
       enum: Object.values(DataType),
     },
+    countryCode: String,
     choices: [ChoiceOptionSchema],
     validation: [ValidationRuleSchema],
     placeholder: String,

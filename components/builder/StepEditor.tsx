@@ -6,6 +6,7 @@ import { HiPlus, HiTrash } from 'react-icons/hi';
 import { Step, DataType, ChoiceOption, Condition, ConditionalOperator, LogicalOperator } from '@/types';
 import { getStepTypeLabel, getDataTypeLabel } from '@/lib/utils/stepHelpers';
 import { v4 as uuidv4 } from 'uuid';
+import { countryCodes } from '@/lib/data/countryCodes';
 
 interface StepEditorProps {
   step: Step;
@@ -215,6 +216,38 @@ export default function StepEditor({ step, onUpdate }: StepEditorProps) {
               </option>
             ))}
           </Select>
+        </div>
+      )}
+
+      {/* Country Code for phone input */}
+      {localStep.input?.type === 'text' && localStep.input?.dataType === DataType.PHONE && (
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="countryCode">Country Code</Label>
+          </div>
+          <Select
+            id="countryCode"
+            value={localStep.input.countryCode || ''}
+            onChange={(e) =>
+              handleUpdate({
+                input: {
+                  ...localStep.input!,
+                  countryCode: e.target.value,
+                },
+              })
+            }
+          >
+            <option value="">Select country (optional)</option>
+            {countryCodes.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.country} ({country.code}) - {country.minDigits}
+                {country.minDigits !== country.maxDigits ? `-${country.maxDigits}` : ''} digits
+              </option>
+            ))}
+          </Select>
+          <p className="mt-1 text-xs text-gray-500">
+            Selecting a country will validate phone numbers based on that country's format
+          </p>
         </div>
       )}
 

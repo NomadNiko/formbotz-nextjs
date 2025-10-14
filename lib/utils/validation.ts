@@ -1,4 +1,5 @@
 import { DataType } from '@/types';
+import { validatePhoneForCountry, getCountryByCode } from '@/lib/data/countryCodes';
 
 /**
  * Validation utilities for form inputs
@@ -28,9 +29,9 @@ export function validateEmail(email: string): { valid: boolean; error?: string }
 }
 
 /**
- * Validate phone number
+ * Validate phone number with optional country code
  */
-export function validatePhone(phone: string): { valid: boolean; error?: string } {
+export function validatePhone(phone: string, countryCode?: string): { valid: boolean; error?: string } {
   // Basic phone validation - accepts various formats
   const phoneRegex = /^[\d\s\-\+\(\)]+$/;
 
@@ -40,12 +41,34 @@ export function validatePhone(phone: string): { valid: boolean; error?: string }
 
   const trimmedPhone = phone.trim();
 
-  if (trimmedPhone.length < 10) {
+  if (!phoneRegex.test(trimmedPhone)) {
     return { valid: false, error: "That doesn't look like a valid phone number. Please try again." };
   }
 
-  if (!phoneRegex.test(trimmedPhone)) {
-    return { valid: false, error: "That doesn't look like a valid phone number. Please try again." };
+  // If country code is provided, validate based on country-specific rules
+  if (countryCode) {
+    const country = getCountryByCode(countryCode);
+    if (!country) {
+      return { valid: false, error: "Invalid country code selected." };
+    }
+
+    const isValid = validatePhoneForCountry(trimmedPhone, countryCode);
+    if (!isValid) {
+      const digits = trimmedPhone.replace(/\D/g, '').length;
+      return {
+        valid: false,
+        error: `Phone number for ${country.country} should be ${country.minDigits}${country.minDigits !== country.maxDigits ? `-${country.maxDigits}` : ''} digits. You entered ${digits} digits.`
+      };
+    }
+  } else {
+    // Generic validation - at least 5 digits
+    const digits = trimmedPhone.replace(/\D/g, '');
+    if (digits.length < 5) {
+      return { valid: false, error: "Phone number is too short. Please enter a valid phone number." };
+    }
+    if (digits.length > 15) {
+      return { valid: false, error: "Phone number is too long. Please enter a valid phone number." };
+    }
   }
 
   return { valid: true };
@@ -73,14 +96,15 @@ export function validateNumber(value: unknown): { valid: boolean; error?: string
  */
 export function validateInput(
   value: unknown,
-  dataType: DataType
+  dataType: DataType,
+  countryCode?: string
 ): { valid: boolean; error?: string } {
   switch (dataType) {
     case DataType.EMAIL:
       return validateEmail(String(value));
 
     case DataType.PHONE:
-      return validatePhone(String(value));
+      return validatePhone(String(value), countryCode);
 
     case DataType.NUMBER:
       return validateNumber(value);

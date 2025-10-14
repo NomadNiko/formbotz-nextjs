@@ -121,6 +121,7 @@ export interface DisplayContent {
 export interface InputConfig {
   type: 'text' | 'choice' | 'none';
   dataType?: DataType;
+  countryCode?: string; // For phone number validation
   choices?: ChoiceOption[];
   validation?: ValidationRule[];
   placeholder?: string;

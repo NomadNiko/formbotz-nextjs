@@ -48,7 +48,7 @@ export async function POST(
 
     // Validate input if step has data collection with specific data type
     if (step.input?.type === 'text' && step.input?.dataType) {
-      const validation = validateInput(answer, step.input.dataType);
+      const validation = validateInput(answer, step.input.dataType, step.input?.countryCode);
       if (!validation.valid) {
         return NextResponse.json(
           {
@@ -97,7 +97,7 @@ export async function POST(
           if (formOwner && formOwner.email) {
             await sendSubmissionNotification(formOwner.email, {
               formName: form.name,
-              submissionId: submission._id.toString(),
+              submissionId: String(submission._id),
               data: collectedData,
               submittedAt: format(new Date(), 'MMM d, yyyy HH:mm:ss'),
             });
