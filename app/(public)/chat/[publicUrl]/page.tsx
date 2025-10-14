@@ -37,6 +37,8 @@ export default function ChatPage() {
   const [error, setError] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [showInput, setShowInput] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [inputHeight, setInputHeight] = useState(0);
 
   useEffect(() => {
     startSession();
@@ -47,18 +49,36 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // Handle mobile keyboard appearance
+  // Handle mobile keyboard appearance and viewport changes
   useEffect(() => {
+    const updateViewportHeight = () => {
+      if (window.visualViewport) {
+        setViewportHeight(window.visualViewport.height);
+      } else {
+        setViewportHeight(window.innerHeight);
+      }
+    };
+
+    // Initial measurement
+    updateViewportHeight();
+
     const handleResize = () => {
-      // Scroll to bottom when keyboard opens
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
+      updateViewportHeight();
+
+      // Scroll to bottom when keyboard opens/closes
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToBottom();
+        }, 50);
+      });
     };
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
       window.visualViewport.addEventListener('scroll', handleResize);
+      window.addEventListener('resize', handleResize);
+    } else {
+      window.addEventListener('resize', handleResize);
     }
 
     return () => {
@@ -66,8 +86,26 @@ export default function ChatPage() {
         window.visualViewport.removeEventListener('resize', handleResize);
         window.visualViewport.removeEventListener('scroll', handleResize);
       }
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  // Measure input container height
+  useEffect(() => {
+    const measureInput = () => {
+      const inputContainer = document.getElementById('input-container');
+      if (inputContainer) {
+        setInputHeight(inputContainer.offsetHeight);
+      }
+    };
+
+    measureInput();
+
+    // Re-measure when input visibility changes
+    const timer = setTimeout(measureInput, 100);
+
+    return () => clearTimeout(timer);
+  }, [showInput, currentStep]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -266,6 +304,18 @@ export default function ChatPage() {
     }
   };
 
+  const handleInputFocus = () => {
+    // When input is focused, scroll to bottom after a short delay
+    // This ensures the input is visible above the keyboard
+    setTimeout(() => {
+      scrollToBottom();
+      // On mobile, also scroll the window to ensure visibility
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 300);
+  };
+
   const progress =
     form && form.steps
       ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100)
@@ -294,12 +344,14 @@ export default function ChatPage() {
   const useDarkText = form?.settings?.useDarkText || false;
   const backgroundImageUrl = form?.settings?.backgroundImageUrl;
 
+  const containerHeight = viewportHeight > 0 ? viewportHeight : window.innerHeight;
+
   return (
     <div
-      className="flex flex-col bg-gray-50 dark:bg-gray-900"
+      className="relative flex flex-col bg-gray-50 dark:bg-gray-900"
       style={{
-        height: '100dvh',
-        maxHeight: '100dvh',
+        height: `${containerHeight}px`,
+        maxHeight: `${containerHeight}px`,
         overflow: 'hidden',
         ...(backgroundImageUrl ? {
           backgroundImage: `url(${backgroundImageUrl})`,
@@ -335,6 +387,7 @@ export default function ChatPage() {
         className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-6 overscroll-contain"
         style={{
           WebkitOverflowScrolling: 'touch',
+          paddingBottom: showInput && inputHeight > 0 ? `${inputHeight + 8}px` : '12px',
           ...(backgroundImageUrl ? { backgroundColor: 'transparent' } : {})
         }}
       >
@@ -395,7 +448,8 @@ export default function ChatPage() {
       {/* Input Area */}
       {!isComplete && currentStep && showInput && (
         <div
-          className="border-t bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-4 dark:border-gray-700 dark:bg-gray-800/90 flex-shrink-0"
+          id="input-container"
+          className="fixed bottom-0 left-0 right-0 border-t bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-4 dark:border-gray-700 dark:bg-gray-800/90 z-50"
           style={{
             paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))',
           }}
@@ -424,7 +478,9 @@ export default function ChatPage() {
                   className="flex-1"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
+                  onFocus={handleInputFocus}
                   disabled={isSubmitting}
+                  autoComplete="off"
                   style={{ fontSize: '16px' }}
                 >
                   <option value="">Select your country...</option>
@@ -455,7 +511,12 @@ export default function ChatPage() {
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  onFocus={handleInputFocus}
                   disabled={isSubmitting}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                   style={{ fontSize: '16px' }}
                 />
                 <Button

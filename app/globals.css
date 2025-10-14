@@ -11,6 +11,18 @@ html, body {
   touch-action: pan-y;
 }
 
+/* Smooth scrolling for mobile */
+@media screen and (max-width: 640px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth input transitions */
+  #input-container {
+    transition: transform 0.2s ease-out;
+  }
+}
+
 /* Prevent zoom on input focus (iOS) */
 input[type="text"],
 input[type="email"],
