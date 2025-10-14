@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Button } from 'flowbite-react';
-import { HiPlus, HiTrash, HiChevronUp, HiChevronDown } from 'react-icons/hi';
+import { HiPlus, HiTrash, HiChevronUp, HiChevronDown, HiDuplicate } from 'react-icons/hi';
 import { Step, StepType } from '@/types';
 import { createStepTemplate, getStepTypeLabel } from '@/lib/utils/stepHelpers';
+import { v4 as uuidv4 } from 'uuid';
 
 interface StepListProps {
   steps: Step[];
@@ -48,6 +49,59 @@ export default function StepList({
     // Update order numbers
     const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
     onReorder(reorderedSteps);
+  };
+
+  const cloneStep = (index: number) => {
+    const stepToClone = steps[index];
+
+    // Deep clone the step with a new ID
+    const clonedStep: Step = {
+      ...stepToClone,
+      id: uuidv4(),
+      order: index + 1,
+      // Clone input choices if they exist
+      input: stepToClone.input
+        ? {
+            ...stepToClone.input,
+            choices: stepToClone.input.choices?.map((choice) => ({
+              ...choice,
+              id: uuidv4(),
+            })),
+          }
+        : undefined,
+      // Clone conditional logic conditions
+      conditionalLogic: stepToClone.conditionalLogic
+        ? {
+            ...stepToClone.conditionalLogic,
+            showIf: stepToClone.conditionalLogic.showIf.map((condition) => ({
+              ...condition,
+            })),
+          }
+        : undefined,
+      // Clone next step override rules
+      nextStepOverride: stepToClone.nextStepOverride
+        ? {
+            ...stepToClone.nextStepOverride,
+            rules: stepToClone.nextStepOverride.rules.map((rule) => ({
+              ...rule,
+              conditions: rule.conditions.map((condition) => ({
+                ...condition,
+              })),
+            })),
+          }
+        : undefined,
+    };
+
+    // Insert the cloned step right after the original
+    const newSteps = [...steps];
+    newSteps.splice(index + 1, 0, clonedStep);
+
+    // Update order numbers for all steps
+    const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
+    onReorder(reorderedSteps);
+
+    // Select the newly cloned step
+    onSelectStep(clonedStep.id);
   };
 
   const getStepIcon = (type: StepType) => {
@@ -125,6 +179,16 @@ export default function StepList({
                 title="Move down"
               >
                 <HiChevronDown className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cloneStep(index);
+                }}
+                className="rounded p-1 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                title="Clone step"
+              >
+                <HiDuplicate className="h-4 w-4" />
               </button>
               <button
                 onClick={(e) => {

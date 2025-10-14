@@ -142,6 +142,7 @@ export function getDataTypeLabel(type: DataType): string {
     [DataType.NAME]: 'Name',
     [DataType.DATE_OF_BIRTH]: 'Date of Birth',
     [DataType.PHONE]: 'Phone Number',
+    [DataType.COUNTRY_CODE]: 'Country Code',
     [DataType.ADDRESS]: 'Address',
     [DataType.EMAIL]: 'Email',
     [DataType.NUMBER]: 'Number',

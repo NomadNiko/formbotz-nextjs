@@ -46,9 +46,26 @@ export async function POST(
       return NextResponse.json({ error: 'Step not found' }, { status: 404 });
     }
 
+    // Get collected data before validation - Convert Mongoose Map to plain object
+    let collectedData = Object.fromEntries(
+      Array.from(submission.data.entries())
+    ) as Record<string, unknown>;
+
     // Validate input if step has data collection with specific data type
     if (step.input?.type === 'text' && step.input?.dataType) {
-      const validation = validateInput(answer, step.input.dataType, step.input?.countryCode);
+      // For phone validation, check if there's a country code in collected data
+      let countryCodeForValidation: string | undefined = undefined;
+      if (step.input.dataType === 'phone') {
+        // Look for any collected variable that might be a country code
+        for (const [key, value] of Object.entries(collectedData)) {
+          if (typeof value === 'string' && value.startsWith('+')) {
+            countryCodeForValidation = value;
+            break;
+          }
+        }
+      }
+
+      const validation = validateInput(answer, step.input.dataType, countryCodeForValidation);
       if (!validation.valid) {
         return NextResponse.json(
           {
@@ -76,8 +93,8 @@ export async function POST(
       await submission.addConversion(stepId);
     }
 
-    // Get collected data - Convert Mongoose Map to plain object
-    const collectedData = Object.fromEntries(
+    // Get updated collected data after saving answer
+    collectedData = Object.fromEntries(
       Array.from(submission.data.entries())
     ) as Record<string, unknown>;
 

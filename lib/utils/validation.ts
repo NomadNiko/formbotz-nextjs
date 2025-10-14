@@ -92,6 +92,32 @@ export function validateNumber(value: unknown): { valid: boolean; error?: string
 }
 
 /**
+ * Validate country code
+ */
+export function validateCountryCode(code: string): { valid: boolean; error?: string } {
+  if (!code || typeof code !== 'string') {
+    return { valid: false, error: "Please select a country." };
+  }
+
+  const trimmedCode = code.trim();
+
+  // Country codes start with + and have 1-4 digits
+  const countryCodeRegex = /^\+\d{1,4}$/;
+
+  if (!countryCodeRegex.test(trimmedCode)) {
+    return { valid: false, error: "Invalid country code format." };
+  }
+
+  // Verify it exists in our country codes list
+  const country = getCountryByCode(trimmedCode);
+  if (!country) {
+    return { valid: false, error: "Country code not recognized." };
+  }
+
+  return { valid: true };
+}
+
+/**
  * Main validation function that routes to specific validators
  */
 export function validateInput(
@@ -105,6 +131,9 @@ export function validateInput(
 
     case DataType.PHONE:
       return validatePhone(String(value), countryCode);
+
+    case DataType.COUNTRY_CODE:
+      return validateCountryCode(String(value));
 
     case DataType.NUMBER:
       return validateNumber(value);

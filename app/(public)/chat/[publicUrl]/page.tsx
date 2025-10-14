@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { Button, TextInput, Card, Progress, Spinner } from 'flowbite-react';
+import { Button, TextInput, Card, Progress, Spinner, Select } from 'flowbite-react';
 import { HiArrowRight } from 'react-icons/hi';
-import { Step, Form as IForm, TypingDelay } from '@/types';
+import { Step, Form as IForm, TypingDelay, DataType } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
 import { parseMessageLinks } from '@/lib/utils/linkParser';
 import TypingIndicator from '@/components/chat/TypingIndicator';
+import { countryCodes } from '@/lib/data/countryCodes';
 
 interface Message {
   id: string;
@@ -362,7 +363,32 @@ export default function ChatPage() {
               </div>
             )}
 
-            {currentStep.input?.type === 'text' && (
+            {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
+              <div className="flex gap-2">
+                <Select
+                  className="flex-1"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select your country...</option>
+                  {countryCodes.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.country} ({country.code})
+                    </option>
+                  ))}
+                </Select>
+                <Button
+                  color="blue"
+                  disabled={isSubmitting || !userInput}
+                  onClick={() => handleSubmit()}
+                >
+                  <HiArrowRight className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
+
+            {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
               <div className="flex gap-2">
                 <TextInput
                   className="flex-1"
