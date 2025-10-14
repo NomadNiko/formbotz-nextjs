@@ -187,6 +187,7 @@ export interface FormSettings {
   thankYouMessage?: string;
   enableProgressBar?: boolean;
   allowBackNavigation?: boolean;
+  emailNotifications?: boolean;
 }
 
 export interface Form {

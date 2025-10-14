@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
-import { Form, Submission } from '@/lib/db/models';
+import { Form, Submission, User } from '@/lib/db/models';
 import { getNextStep } from '@/lib/utils/conditionalLogic';
 import { validateInput } from '@/lib/utils/validation';
+import { sendSubmissionNotification } from '@/lib/utils/email';
+import { format } from 'date-fns';
 
 // POST /api/chat/[publicUrl]/answer - Submit an answer
 export async function POST(
@@ -86,6 +88,25 @@ export async function POST(
     if (!nextStep) {
       await submission.complete();
       await form.incrementCompletions();
+
+      // Send email notification if enabled
+      if (form.settings?.emailNotifications) {
+        try {
+          // Get form owner's email
+          const formOwner = await User.findById(form.clientId);
+          if (formOwner && formOwner.email) {
+            await sendSubmissionNotification(formOwner.email, {
+              formName: form.name,
+              submissionId: submission._id.toString(),
+              data: collectedData,
+              submittedAt: format(new Date(), 'MMM d, yyyy HH:mm:ss'),
+            });
+          }
+        } catch (emailError) {
+          // Log but don't fail the submission if email fails
+          console.error('Failed to send email notification:', emailError);
+        }
+      }
 
       return NextResponse.json(
         {

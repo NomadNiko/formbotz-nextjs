@@ -139,6 +139,17 @@ export default function FormSettings({ settings, onUpdate }: FormSettingsProps) 
           />
           <Label htmlFor="allowBackNavigation">Allow back navigation</Label>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="emailNotifications"
+            checked={settings.emailNotifications || false}
+            onChange={(e) =>
+              handleUpdate({ emailNotifications: e.target.checked })
+            }
+          />
+          <Label htmlFor="emailNotifications">Email me when form is completed</Label>
+        </div>
       </div>
     </div>
   );
