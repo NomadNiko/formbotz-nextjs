@@ -10,6 +10,8 @@ import {
   HiGlobeAlt,
   HiPlus,
   HiClipboardList,
+  HiChevronLeft,
+  HiChevronRight,
 } from 'react-icons/hi';
 import Link from 'next/link';
 import { Form as IForm, Step } from '@/types';
@@ -27,6 +29,8 @@ export default function FormEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
+  const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     fetchForm();
@@ -247,26 +251,51 @@ export default function FormEditorPage() {
       {/* Main Builder Layout */}
       <div className="flex flex-1 gap-4 overflow-hidden">
         {/* Left: Step List */}
-        <div className="w-80 flex-shrink-0">
-          <Card className="h-full overflow-hidden">
-            <div className="flex h-full flex-col">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Steps</h3>
-                <Button size="xs" color="blue">
-                  <HiPlus className="h-4 w-4" />
-                </Button>
+        <div
+          className={`flex-shrink-0 transition-all duration-300 ease-in-out ${
+            isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+          }`}
+        >
+          <Card className="h-full overflow-hidden relative">
+            {isLeftSidebarCollapsed ? (
+              <div className="flex h-full items-center justify-center">
+                <button
+                  onClick={() => setIsLeftSidebarCollapsed(false)}
+                  className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                  title="Expand sidebar"
+                >
+                  <HiChevronRight className="h-5 w-5" />
+                </button>
               </div>
-              <div className="flex-1 overflow-y-auto">
-                <StepList
-                  steps={form.steps}
-                  selectedStepId={selectedStepId}
-                  onSelectStep={setSelectedStepId}
-                  onReorder={handleReorderSteps}
-                  onDelete={handleDeleteStep}
-                  onAdd={handleAddStep}
-                />
+            ) : (
+              <div className="flex h-full flex-col">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Steps</h3>
+                  <div className="flex gap-1">
+                    <Button size="xs" color="blue">
+                      <HiPlus className="h-4 w-4" />
+                    </Button>
+                    <button
+                      onClick={() => setIsLeftSidebarCollapsed(true)}
+                      className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                      title="Collapse sidebar"
+                    >
+                      <HiChevronLeft className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <StepList
+                    steps={form.steps}
+                    selectedStepId={selectedStepId}
+                    onSelectStep={setSelectedStepId}
+                    onReorder={handleReorderSteps}
+                    onDelete={handleDeleteStep}
+                    onAdd={handleAddStep}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </Card>
         </div>
 
@@ -287,44 +316,72 @@ export default function FormEditorPage() {
         </div>
 
         {/* Right: Settings/Preview */}
-        <div className="w-80 flex-shrink-0 overflow-hidden">
-          <Card className="h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto">
-              <FormSettings
-                settings={form.settings}
-                onUpdate={(settings) => setForm({ ...form, settings })}
-              />
+        <div
+          className={`flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${
+            isRightSidebarCollapsed ? 'w-12' : 'w-80'
+          }`}
+        >
+          <Card className="h-full flex flex-col relative">
+            {isRightSidebarCollapsed ? (
+              <div className="flex h-full items-center justify-center">
+                <button
+                  onClick={() => setIsRightSidebarCollapsed(false)}
+                  className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                  title="Expand sidebar"
+                >
+                  <HiChevronLeft className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Settings</h3>
+                  <button
+                    onClick={() => setIsRightSidebarCollapsed(true)}
+                    className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                    title="Collapse sidebar"
+                  >
+                    <HiChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <FormSettings
+                    settings={form.settings}
+                    onUpdate={(settings) => setForm({ ...form, settings })}
+                  />
 
-              <div className="mt-6 border-t pt-6 dark:border-gray-700">
-                <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
-                  Form Info
-                </h4>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Public URL
-                    </p>
-                    <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
-                      /chat/{form.publicUrl}
-                    </code>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Stats
-                    </p>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p>Views: {form.stats?.views || 0}</p>
-                      <p>Starts: {form.stats?.starts || 0}</p>
-                      <p>Completions: {form.stats?.completions || 0}</p>
-                      <p>
-                        Rate:{' '}
-                        {form.stats?.completionRate?.toFixed(1) || 0}%
-                      </p>
+                  <div className="mt-6 border-t pt-6 dark:border-gray-700">
+                    <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+                      Form Info
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Public URL
+                        </p>
+                        <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                          /chat/{form.publicUrl}
+                        </code>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Stats
+                        </p>
+                        <div className="mt-2 space-y-1 text-sm">
+                          <p>Views: {form.stats?.views || 0}</p>
+                          <p>Starts: {form.stats?.starts || 0}</p>
+                          <p>Completions: {form.stats?.completions || 0}</p>
+                          <p>
+                            Rate:{' '}
+                            {form.stats?.completionRate?.toFixed(1) || 0}%
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </Card>
         </div>
       </div>

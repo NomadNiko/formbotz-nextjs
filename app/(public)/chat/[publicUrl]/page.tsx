@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Button, TextInput, Card, Progress, Spinner, Select } from 'flowbite-react';
+import { Button, Progress, Spinner } from 'flowbite-react';
 import { HiArrowRight } from 'react-icons/hi';
 import { Step, Form as IForm, TypingDelay, DataType } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
@@ -23,6 +23,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [form, setForm] = useState<IForm | null>(null);
@@ -37,79 +38,39 @@ export default function ChatPage() {
   const [error, setError] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [showInput, setShowInput] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(0);
-  const [inputHeight, setInputHeight] = useState(0);
 
   useEffect(() => {
     startSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicUrl]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isTyping]);
-
-  // Handle mobile keyboard appearance and viewport changes
-  useEffect(() => {
-    const updateViewportHeight = () => {
-      if (window.visualViewport) {
-        setViewportHeight(window.visualViewport.height);
-      } else {
-        setViewportHeight(window.innerHeight);
-      }
-    };
-
-    // Initial measurement
-    updateViewportHeight();
-
-    const handleResize = () => {
-      updateViewportHeight();
-
-      // Scroll to bottom when keyboard opens/closes
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          scrollToBottom();
-        }, 50);
+  // Improved scroll behavior
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current && messagesContainerRef.current) {
+      // Use smooth scroll for better UX
+      messagesEndRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
       });
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
-      window.addEventListener('resize', handleResize);
-    } else {
-      window.addEventListener('resize', handleResize);
     }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-        window.visualViewport.removeEventListener('scroll', handleResize);
-      }
-      window.removeEventListener('resize', handleResize);
-    };
   }, []);
 
-  // Measure input container height
+  // Scroll when messages change or typing indicator appears
   useEffect(() => {
-    const measureInput = () => {
-      const inputContainer = document.getElementById('input-container');
-      if (inputContainer) {
-        setInputHeight(inputContainer.offsetHeight);
-      }
-    };
-
-    measureInput();
-
-    // Re-measure when input visibility changes
-    const timer = setTimeout(measureInput, 100);
-
+    const timer = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timer);
-  }, [showInput, currentStep]);
+  }, [messages, isTyping, scrollToBottom]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Focus input and scroll when it becomes visible
+  useEffect(() => {
+    if (showInput && inputRef.current && currentStep?.input?.type === 'text') {
+      // Small delay to ensure layout is stable
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [showInput, currentStep, scrollToBottom]);
 
   const startSession = async () => {
     try {
@@ -157,32 +118,22 @@ export default function ChatPage() {
 
   const showStep = (step: Step, data: Record<string, unknown>) => {
     const delayMs = getTypingDelayMs();
-
-    // Hide input controls while showing the message
     setShowInput(false);
 
     if (delayMs === 0) {
-      // No delay - show immediately
       step.display.messages.forEach((msg) => {
         const interpolatedText = interpolateVariables(msg.text, data);
         addBotMessageImmediate(interpolatedText);
       });
-      // Show input controls immediately after message
       setShowInput(true);
     } else {
-      // Show typing indicator
       setIsTyping(true);
-
       setTimeout(() => {
         setIsTyping(false);
-
-        // Interpolate variables in messages
         step.display.messages.forEach((msg) => {
           const interpolatedText = interpolateVariables(msg.text, data);
           addBotMessageImmediate(interpolatedText);
         });
-
-        // Show input controls after message appears
         setShowInput(true);
       }, delayMs);
     }
@@ -192,12 +143,9 @@ export default function ChatPage() {
     const delayMs = getTypingDelayMs();
 
     if (delayMs === 0) {
-      // No delay - show immediately
       addBotMessageImmediate(text);
     } else {
-      // Show typing indicator
       setIsTyping(true);
-
       setTimeout(() => {
         setIsTyping(false);
         addBotMessageImmediate(text);
@@ -234,7 +182,6 @@ export default function ChatPage() {
 
     const answerToSubmit = answer !== undefined ? answer : userInput;
 
-    // Only reject undefined/null, not other falsy values like false or 0
     if (currentStep.input?.type !== 'none' && (answerToSubmit === undefined || answerToSubmit === null || answerToSubmit === '')) {
       return;
     }
@@ -255,7 +202,6 @@ export default function ChatPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Validation passed - now add user message and clear input
         if (currentStep.input?.type === 'text' && answerToSubmit) {
           addUserMessage(String(answerToSubmit));
         }
@@ -272,15 +218,11 @@ export default function ChatPage() {
           setCurrentStep(data.nextStep);
           setCollectedData(data.collectedData || collectedData);
           setCurrentStepIndex((prev) => prev + 1);
-
-          // Show next step (with typing delay)
           showStep(data.nextStep, data.collectedData || collectedData);
         }
       } else {
-        // Handle validation errors differently - show as bot message and allow retry
         if (data.validationError) {
           addBotMessage(data.error || 'Invalid input. Please try again.');
-          // Keep user input in the field so they can edit it
         } else {
           setError(data.error || 'Failed to submit answer');
         }
@@ -305,21 +247,10 @@ export default function ChatPage() {
   };
 
   const handleInputFocus = () => {
-    // When input is focused, scroll to bottom after a short delay
-    // This ensures the input is visible above the keyboard
-    setTimeout(() => {
-      scrollToBottom();
-      // On mobile, also scroll the window to ensure visibility
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
-    }, 300);
+    setTimeout(scrollToBottom, 300);
   };
 
-  const progress =
-    form && form.steps
-      ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100)
-      : 0;
+  const progress = form && form.steps ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100) : 0;
 
   if (isLoading) {
     return (
@@ -331,11 +262,11 @@ export default function ChatPage() {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Card className="max-w-md">
-          <h2 className="text-xl font-bold text-red-600">Error</h2>
-          <p>{error}</p>
-        </Card>
+      <div className="flex h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+        <div className="max-w-md rounded-lg border border-red-200 bg-white p-6 dark:border-red-800 dark:bg-gray-800">
+          <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Error</h2>
+          <p className="mt-2 text-gray-700 dark:text-gray-300">{error}</p>
+        </div>
       </div>
     );
   }
@@ -344,15 +275,13 @@ export default function ChatPage() {
   const useDarkText = form?.settings?.useDarkText || false;
   const backgroundImageUrl = form?.settings?.backgroundImageUrl;
 
-  const containerHeight = viewportHeight > 0 ? viewportHeight : window.innerHeight;
-
   return (
     <div
-      className="relative flex flex-col bg-gray-50 dark:bg-gray-900"
+      ref={chatContainerRef}
+      className="flex h-screen flex-col overflow-hidden bg-gray-50 dark:bg-gray-900"
       style={{
-        height: `${containerHeight}px`,
-        maxHeight: `${containerHeight}px`,
-        overflow: 'hidden',
+        height: '100dvh', // Dynamic viewport height
+        maxHeight: '100dvh',
         ...(backgroundImageUrl ? {
           backgroundImage: `url(${backgroundImageUrl})`,
           backgroundSize: 'cover',
@@ -361,37 +290,31 @@ export default function ChatPage() {
         } : {})
       }}
     >
-      {/* Header */}
-      <div
-        className="border-b bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-6 sm:py-4 dark:border-gray-700 dark:bg-gray-800/90 flex-shrink-0"
-        style={{
-          paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0.5rem))',
-        }}
-      >
-        <h1 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 border-b bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95">
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white">
           {form?.name || 'Conversational Form'}
         </h1>
         {form?.settings?.enableProgressBar && !isComplete && (
-          <div className="mt-1 sm:mt-2">
+          <div className="mt-2">
             <Progress progress={progress} size="sm" color="blue" />
-            <p className="mt-0.5 sm:mt-1 text-xs text-gray-600 dark:text-gray-400">
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
               Step {currentStepIndex + 1} of {form?.steps?.length || 0}
             </p>
           </div>
         )}
       </div>
 
-      {/* Messages */}
+      {/* Messages - Scrollable */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-6 overscroll-contain"
+        className="flex-1 overflow-y-auto overscroll-contain px-4 py-4"
         style={{
           WebkitOverflowScrolling: 'touch',
-          paddingBottom: showInput && inputHeight > 0 ? `${inputHeight + 8}px` : '12px',
           ...(backgroundImageUrl ? { backgroundColor: 'transparent' } : {})
         }}
       >
-        <div className="mx-auto max-w-3xl space-y-2 sm:space-y-4">
+        <div className="mx-auto max-w-3xl space-y-3">
           {messages.map((message) => {
             const messageParts = parseMessageLinks(message.text);
 
@@ -401,7 +324,7 @@ export default function ChatPage() {
                 className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-2 ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                     message.isBot
                       ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
                       : ''
@@ -411,7 +334,7 @@ export default function ChatPage() {
                     color: useDarkText ? '#000000' : '#ffffff'
                   } : undefined}
                 >
-                  <p className="whitespace-pre-wrap text-sm sm:text-base">
+                  <p className="whitespace-pre-wrap text-[15px] leading-relaxed">
                     {messageParts.map((part, index) => {
                       if (part.type === 'link' && part.url) {
                         return (
@@ -420,7 +343,7 @@ export default function ChatPage() {
                             href={part.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`underline hover:no-underline font-semibold ${
+                            className={`font-semibold underline hover:no-underline ${
                               message.isBot
                                 ? 'text-blue-600 dark:text-blue-400'
                                 : ''
@@ -445,18 +368,12 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Input Area */}
+      {/* Input Area - Fixed at Bottom */}
       {!isComplete && currentStep && showInput && (
-        <div
-          id="input-container"
-          className="fixed bottom-0 left-0 right-0 border-t bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-4 dark:border-gray-700 dark:bg-gray-800/90 z-50"
-          style={{
-            paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))',
-          }}
-        >
+        <div className="flex-shrink-0 border-t bg-white/95 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95 safe-bottom">
           <div className="mx-auto max-w-3xl">
             {currentStep.input?.type === 'choice' && (
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <div className="flex flex-wrap gap-2">
                 {currentStep.input.choices?.map((choice) => (
                   <Button
                     key={choice.id}
@@ -464,7 +381,7 @@ export default function ChatPage() {
                     size="sm"
                     disabled={isSubmitting}
                     onClick={() => handleChoiceClick(choice)}
-                    className="text-sm sm:text-base"
+                    className="flex-shrink-0"
                   >
                     {choice.label}
                   </Button>
@@ -474,13 +391,12 @@ export default function ChatPage() {
 
             {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
               <div className="flex gap-2">
-                <Select
-                  className="flex-1"
+                <select
+                  className="flex-1 rounded-lg border-gray-300 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onFocus={handleInputFocus}
                   disabled={isSubmitting}
-                  autoComplete="off"
                   style={{ fontSize: '16px' }}
                 >
                   <option value="">Select your country...</option>
@@ -489,24 +405,25 @@ export default function ChatPage() {
                       {country.country} ({country.code})
                     </option>
                   ))}
-                </Select>
+                </select>
                 <Button
                   color="blue"
                   size="sm"
                   disabled={isSubmitting || !userInput}
                   onClick={() => handleSubmit()}
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 px-4"
                 >
-                  <HiArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <HiArrowRight className="h-5 w-5" />
                 </Button>
               </div>
             )}
 
             {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
               <div className="flex gap-2">
-                <TextInput
+                <input
                   ref={inputRef}
-                  className="flex-1"
+                  type="text"
+                  className="flex-1 rounded-lg border-gray-300 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder={currentStep.input.placeholder || 'Type your answer...'}
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
@@ -524,9 +441,9 @@ export default function ChatPage() {
                   size="sm"
                   disabled={isSubmitting || !userInput}
                   onClick={() => handleSubmit()}
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 px-4"
                 >
-                  <HiArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <HiArrowRight className="h-5 w-5" />
                 </Button>
               </div>
             )}
@@ -537,9 +454,9 @@ export default function ChatPage() {
                 size="sm"
                 disabled={isSubmitting}
                 onClick={() => handleSubmit('')}
-                className="w-full sm:w-auto text-sm sm:text-base"
+                className="w-full"
               >
-                Continue <HiArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                Continue <HiArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}
           </div>

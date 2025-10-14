@@ -4,51 +4,230 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Mobile optimization */
-html, body {
+/* ========================================
+   MOBILE OPTIMIZATIONS
+   ======================================== */
+
+/* Prevent overscroll and enable smooth scrolling */
+html,
+body {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
 }
 
-/* Smooth scrolling for mobile */
-@media screen and (max-width: 640px) {
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Smooth input transitions */
-  #input-container {
-    transition: transform 0.2s ease-out;
-  }
+/* Support for dynamic viewport height (mobile browsers) */
+html {
+  height: -webkit-fill-available;
 }
 
-/* Prevent zoom on input focus (iOS) */
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh; /* Dynamic viewport height */
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ========================================
+   PREVENT INPUT ZOOM ON iOS
+   ======================================== */
+
+/* Critical: All inputs must be at least 16px to prevent zoom */
 input[type="text"],
 input[type="email"],
 input[type="tel"],
 input[type="number"],
+input[type="search"],
+input[type="password"],
 select,
 textarea {
   font-size: 16px !important;
 }
 
-/* Support for notched devices */
-@supports(padding: max(0px)) {
-  body {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+/* Ensure Flowbite components also have 16px font */
+.flowbite-input,
+[class*="flowbite"] input,
+[class*="flowbite"] select,
+[class*="flowbite"] textarea {
+  font-size: 16px !important;
+}
+
+/* ========================================
+   SAFE AREA INSETS (Notched Devices)
+   ======================================== */
+
+/* Apply safe area insets to elements that need it */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Support for older webkit */
+@supports (padding: max(0px)) {
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 0.75rem);
+  }
+
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
 }
 
-/* Fix iOS input zoom */
-@media screen and (max-width: 640px) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
+/* ========================================
+   SCROLL BEHAVIOR
+   ======================================== */
+
+/* Smooth scrolling for better UX */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Prevent pull-to-refresh */
+/* Prevent pull-to-refresh on mobile */
 body {
   overscroll-behavior-y: contain;
+}
+
+/* Fix iOS momentum scrolling */
+.overflow-touch {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* ========================================
+   MOBILE SPECIFIC STYLES
+   ======================================== */
+
+@media screen and (max-width: 640px) {
+  /* Optimize touch targets for mobile */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px; /* iOS minimum touch target */
+    min-width: 44px;
+  }
+
+  /* Reduce motion for better performance on mobile */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Optimize rendering */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ========================================
+   FOCUS STYLES (Accessibility)
+   ======================================== */
+
+/* Remove default outline, add custom focus styles */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent text selection on buttons */
+button,
+[role="button"] {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ========================================
+   FLOWBITE OVERRIDES FOR MOBILE
+   ======================================== */
+
+/* Ensure Flowbite inputs don't zoom on iOS */
+[data-testid="flowbite-textinput"] input,
+[data-testid="flowbite-textarea"] textarea,
+[data-testid="flowbite-select"] select {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+
+/* Improve button touch targets */
+[data-testid="flowbite-button"] {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+}
+
+/* ========================================
+   PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+/* Use GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize text rendering */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   CHAT SPECIFIC STYLES
+   ======================================== */
+
+/* Ensure chat container uses full height */
+.chat-container {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height */
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+/* Message bubbles optimization */
+.message-bubble {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
