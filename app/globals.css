@@ -231,3 +231,18 @@ body {
   overflow-wrap: break-word;
   hyphens: auto;
 }
+
+/* iOS-specific input bar positioning */
+@supports (-webkit-touch-callout: none) {
+  /* Target iOS devices */
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 60px) !important;
+  }
+
+  /* Add extra padding to messages container on iOS to prevent content from being hidden */
+  @media screen and (max-width: 640px) {
+    .chat-messages-container {
+      padding-bottom: 80px !important;
+    }
+  }
+}

@@ -308,7 +308,7 @@ export default function ChatPage() {
       {/* Messages - Scrollable */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto overscroll-contain px-4 py-4"
+        className="chat-messages-container flex-1 overflow-y-auto overscroll-contain px-4 py-4"
         style={{
           WebkitOverflowScrolling: 'touch',
           ...(backgroundImageUrl ? { backgroundColor: 'transparent' } : {})
@@ -392,7 +392,7 @@ export default function ChatPage() {
             {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
               <div className="flex gap-2">
                 <select
-                  className="flex-1 rounded-lg border-gray-300 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                  className="flex-1 rounded-lg border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onFocus={handleInputFocus}
@@ -423,7 +423,7 @@ export default function ChatPage() {
                 <input
                   ref={inputRef}
                   type="text"
-                  className="flex-1 rounded-lg border-gray-300 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="flex-1 rounded-lg border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder={currentStep.input.placeholder || 'Type your answer...'}
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
