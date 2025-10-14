@@ -4,9 +4,10 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Button, TextInput, Card, Progress, Spinner } from 'flowbite-react';
 import { HiArrowRight } from 'react-icons/hi';
-import { Step, Form as IForm } from '@/types';
+import { Step, Form as IForm, TypingDelay } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
 import { parseMessageLinks } from '@/lib/utils/linkParser';
+import TypingIndicator from '@/components/chat/TypingIndicator';
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
@@ -39,7 +41,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isTyping]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -76,15 +78,62 @@ export default function ChatPage() {
     }
   };
 
+  const getTypingDelayMs = (): number => {
+    const delay = form?.settings?.typingDelay || TypingDelay.NORMAL;
+    switch (delay) {
+      case TypingDelay.NONE:
+        return 0;
+      case TypingDelay.SHORT:
+        return 1500;
+      case TypingDelay.NORMAL:
+      default:
+        return 2500;
+    }
+  };
+
   const showStep = (step: Step, data: Record<string, unknown>) => {
-    // Interpolate variables in messages
-    step.display.messages.forEach((msg) => {
-      const interpolatedText = interpolateVariables(msg.text, data);
-      addBotMessage(interpolatedText);
-    });
+    const delayMs = getTypingDelayMs();
+
+    if (delayMs === 0) {
+      // No delay - show immediately
+      step.display.messages.forEach((msg) => {
+        const interpolatedText = interpolateVariables(msg.text, data);
+        addBotMessageImmediate(interpolatedText);
+      });
+    } else {
+      // Show typing indicator
+      setIsTyping(true);
+
+      setTimeout(() => {
+        setIsTyping(false);
+
+        // Interpolate variables in messages
+        step.display.messages.forEach((msg) => {
+          const interpolatedText = interpolateVariables(msg.text, data);
+          addBotMessageImmediate(interpolatedText);
+        });
+      }, delayMs);
+    }
   };
 
   const addBotMessage = (text: string) => {
+    const delayMs = getTypingDelayMs();
+
+    if (delayMs === 0) {
+      // No delay - show immediately
+      addBotMessageImmediate(text);
+    } else {
+      // Show typing indicator
+      setIsTyping(true);
+
+      setTimeout(() => {
+        setIsTyping(false);
+        addBotMessageImmediate(text);
+      }, delayMs);
+    }
+  };
+
+  const addBotMessageImmediate = (text: string) => {
     setMessages((prev) => [
       ...prev,
       {
@@ -152,10 +201,8 @@ export default function ChatPage() {
           setCollectedData(data.collectedData || collectedData);
           setCurrentStepIndex((prev) => prev + 1);
 
-          // Delay before showing next step
-          setTimeout(() => {
-            showStep(data.nextStep, data.collectedData || collectedData);
-          }, 1500);
+          // Show next step (with typing delay)
+          showStep(data.nextStep, data.collectedData || collectedData);
         }
       } else {
         // Handle validation errors differently - show as bot message and allow retry
@@ -209,10 +256,22 @@ export default function ChatPage() {
     );
   }
 
+  const brandColor = form?.settings?.brandColor || '#3b82f6';
+  const useDarkText = form?.settings?.useDarkText || false;
+  const backgroundImageUrl = form?.settings?.backgroundImageUrl;
+
   return (
-    <div className="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
+    <div
+      className="flex h-screen flex-col bg-gray-50 dark:bg-gray-900"
+      style={backgroundImageUrl ? {
+        backgroundImage: `url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      } : undefined}
+    >
       {/* Header */}
-      <div className="border-b bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
+      <div className="border-b bg-white/90 backdrop-blur-sm px-6 py-4 dark:border-gray-700 dark:bg-gray-800/90">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">
           {form?.name || 'Conversational Form'}
         </h1>
@@ -227,7 +286,9 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6" style={backgroundImageUrl ? {
+        backgroundColor: 'transparent'
+      } : undefined}>
         <div className="mx-auto max-w-3xl space-y-4">
           {messages.map((message) => {
             const messageParts = parseMessageLinks(message.text);
@@ -241,8 +302,12 @@ export default function ChatPage() {
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     message.isBot
                       ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
-                      : 'bg-blue-600 text-white'
+                      : ''
                   }`}
+                  style={!message.isBot ? {
+                    backgroundColor: brandColor,
+                    color: useDarkText ? '#000000' : '#ffffff'
+                  } : undefined}
                 >
                   <p className="whitespace-pre-wrap">
                     {messageParts.map((part, index) => {
@@ -253,11 +318,14 @@ export default function ChatPage() {
                             href={part.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`underline hover:no-underline ${
+                            className={`underline hover:no-underline font-semibold ${
                               message.isBot
                                 ? 'text-blue-600 dark:text-blue-400'
-                                : 'text-white font-semibold'
+                                : ''
                             }`}
+                            style={!message.isBot ? {
+                              color: useDarkText ? '#000000' : '#ffffff'
+                            } : undefined}
                           >
                             {part.content}
                           </a>
@@ -270,13 +338,14 @@ export default function ChatPage() {
               </div>
             );
           })}
+          {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Input Area */}
       {!isComplete && currentStep && (
-        <div className="border-t bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
+        <div className="border-t bg-white/90 backdrop-blur-sm px-4 py-4 dark:border-gray-700 dark:bg-gray-800/90">
           <div className="mx-auto max-w-3xl">
             {currentStep.input?.type === 'choice' && (
               <div className="flex flex-wrap gap-2">

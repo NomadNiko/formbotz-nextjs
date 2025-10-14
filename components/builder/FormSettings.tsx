@@ -1,7 +1,7 @@
 'use client';
 
-import { Label, TextInput, Checkbox } from 'flowbite-react';
-import { FormSettings as IFormSettings } from '@/types';
+import { Label, TextInput, Checkbox, Radio } from 'flowbite-react';
+import { FormSettings as IFormSettings, TypingDelay } from '@/types';
 
 interface FormSettingsProps {
   settings: IFormSettings;
@@ -29,6 +29,68 @@ export default function FormSettings({ settings, onUpdate }: FormSettingsProps) 
           value={settings.brandColor || '#3b82f6'}
           onChange={(e) => handleUpdate({ brandColor: e.target.value })}
         />
+      </div>
+
+      <div>
+        <div className="mb-2 block">
+          <Label htmlFor="backgroundImageUrl">Background Image URL</Label>
+        </div>
+        <TextInput
+          id="backgroundImageUrl"
+          type="url"
+          placeholder="https://example.com/background.jpg"
+          value={settings.backgroundImageUrl || ''}
+          onChange={(e) => handleUpdate({ backgroundImageUrl: e.target.value })}
+        />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="useDarkText"
+          checked={settings.useDarkText || false}
+          onChange={(e) =>
+            handleUpdate({ useDarkText: e.target.checked })
+          }
+        />
+        <Label htmlFor="useDarkText">Dark Text? (for light brand colors)</Label>
+      </div>
+
+      <div>
+        <div className="mb-2 block">
+          <Label>Typing Delay</Label>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Radio
+              id="delay-none"
+              name="typingDelay"
+              value={TypingDelay.NONE}
+              checked={(settings.typingDelay || TypingDelay.NORMAL) === TypingDelay.NONE}
+              onChange={(e) => handleUpdate({ typingDelay: e.target.value })}
+            />
+            <Label htmlFor="delay-none">No Delay</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Radio
+              id="delay-short"
+              name="typingDelay"
+              value={TypingDelay.SHORT}
+              checked={(settings.typingDelay || TypingDelay.NORMAL) === TypingDelay.SHORT}
+              onChange={(e) => handleUpdate({ typingDelay: e.target.value })}
+            />
+            <Label htmlFor="delay-short">Short Delay (1.5 seconds)</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Radio
+              id="delay-normal"
+              name="typingDelay"
+              value={TypingDelay.NORMAL}
+              checked={(settings.typingDelay || TypingDelay.NORMAL) === TypingDelay.NORMAL}
+              onChange={(e) => handleUpdate({ typingDelay: e.target.value })}
+            />
+            <Label htmlFor="delay-normal">Normal Delay (2.5 seconds)</Label>
+          </div>
+        </div>
       </div>
 
       <div>

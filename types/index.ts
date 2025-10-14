@@ -171,8 +171,17 @@ export interface Step {
   updatedAt?: Date;
 }
 
+export enum TypingDelay {
+  NONE = 'none',
+  SHORT = 'short',
+  NORMAL = 'normal'
+}
+
 export interface FormSettings {
   brandColor?: string;
+  backgroundImageUrl?: string;
+  useDarkText?: boolean;
+  typingDelay?: TypingDelay | string;
   logo?: string;
   welcomeMessage?: string;
   thankYouMessage?: string;

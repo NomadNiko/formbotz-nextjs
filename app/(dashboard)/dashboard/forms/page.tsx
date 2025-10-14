@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button, Card, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell } from 'flowbite-react';
-import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink, HiClipboardList } from 'react-icons/hi';
 import { Form as IForm } from '@/types';
 import { format } from 'date-fns';
 
@@ -175,6 +175,15 @@ export default function FormsListPage() {
                             <HiExternalLink className="h-4 w-4" />
                           </Button>
                         )}
+                        <Button
+                          size="xs"
+                          color="light"
+                          onClick={() =>
+                            router.push(`/dashboard/forms/${form._id}/submissions`)
+                          }
+                        >
+                          <HiClipboardList className="h-4 w-4" />
+                        </Button>
                         <Button
                           size="xs"
                           color="failure"

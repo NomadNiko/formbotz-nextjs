@@ -188,6 +188,13 @@ const StepSchema = new Schema<Step>(
 const FormSettingsSchema = new Schema(
   {
     brandColor: String,
+    backgroundImageUrl: String,
+    useDarkText: { type: Boolean, default: false },
+    typingDelay: {
+      type: String,
+      enum: ['none', 'short', 'normal'],
+      default: 'normal'
+    },
     logo: String,
     welcomeMessage: String,
     thankYouMessage: String,
