@@ -36,7 +36,6 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [showInput, setShowInput] = useState(false);
 
   useEffect(() => {
@@ -51,17 +50,10 @@ export default function ChatPage() {
   // Handle mobile keyboard appearance
   useEffect(() => {
     const handleResize = () => {
-      if (window.visualViewport) {
-        const viewportHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        const keyboardHeight = windowHeight - viewportHeight;
-        setKeyboardHeight(keyboardHeight);
-
-        // Scroll to bottom when keyboard opens
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
-      }
+      // Scroll to bottom when keyboard opens
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     };
 
     if (window.visualViewport) {

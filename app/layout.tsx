@@ -18,13 +18,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FormBotz - Conversational Form Builder",
   description: "Create engaging conversational forms that feel like chatting with a friend",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
