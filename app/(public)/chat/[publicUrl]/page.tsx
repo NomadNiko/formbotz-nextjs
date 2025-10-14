@@ -21,6 +21,8 @@ export default function ChatPage() {
   const params = useParams();
   const publicUrl = params.publicUrl as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [form, setForm] = useState<IForm | null>(null);
@@ -34,6 +36,8 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [showInput, setShowInput] = useState(false);
 
   useEffect(() => {
     startSession();
@@ -43,6 +47,35 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  // Handle mobile keyboard appearance
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const keyboardHeight = windowHeight - viewportHeight;
+        setKeyboardHeight(keyboardHeight);
+
+        // Scroll to bottom when keyboard opens
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,12 +128,17 @@ export default function ChatPage() {
   const showStep = (step: Step, data: Record<string, unknown>) => {
     const delayMs = getTypingDelayMs();
 
+    // Hide input controls while showing the message
+    setShowInput(false);
+
     if (delayMs === 0) {
       // No delay - show immediately
       step.display.messages.forEach((msg) => {
         const interpolatedText = interpolateVariables(msg.text, data);
         addBotMessageImmediate(interpolatedText);
       });
+      // Show input controls immediately after message
+      setShowInput(true);
     } else {
       // Show typing indicator
       setIsTyping(true);
@@ -113,6 +151,9 @@ export default function ChatPage() {
           const interpolatedText = interpolateVariables(msg.text, data);
           addBotMessageImmediate(interpolatedText);
         });
+
+        // Show input controls after message appears
+        setShowInput(true);
       }, delayMs);
     }
   };
@@ -263,23 +304,33 @@ export default function ChatPage() {
 
   return (
     <div
-      className="flex h-screen flex-col bg-gray-50 dark:bg-gray-900"
-      style={backgroundImageUrl ? {
-        backgroundImage: `url(${backgroundImageUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      } : undefined}
+      className="flex flex-col bg-gray-50 dark:bg-gray-900"
+      style={{
+        height: '100dvh',
+        maxHeight: '100dvh',
+        overflow: 'hidden',
+        ...(backgroundImageUrl ? {
+          backgroundImage: `url(${backgroundImageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        } : {})
+      }}
     >
       {/* Header */}
-      <div className="border-b bg-white/90 backdrop-blur-sm px-6 py-4 dark:border-gray-700 dark:bg-gray-800/90">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+      <div
+        className="border-b bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-6 sm:py-4 dark:border-gray-700 dark:bg-gray-800/90 flex-shrink-0"
+        style={{
+          paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0.5rem))',
+        }}
+      >
+        <h1 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
           {form?.name || 'Conversational Form'}
         </h1>
         {form?.settings?.enableProgressBar && !isComplete && (
-          <div className="mt-2">
+          <div className="mt-1 sm:mt-2">
             <Progress progress={progress} size="sm" color="blue" />
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+            <p className="mt-0.5 sm:mt-1 text-xs text-gray-600 dark:text-gray-400">
               Step {currentStepIndex + 1} of {form?.steps?.length || 0}
             </p>
           </div>
@@ -287,10 +338,15 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6" style={backgroundImageUrl ? {
-        backgroundColor: 'transparent'
-      } : undefined}>
-        <div className="mx-auto max-w-3xl space-y-4">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-6 overscroll-contain"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          ...(backgroundImageUrl ? { backgroundColor: 'transparent' } : {})
+        }}
+      >
+        <div className="mx-auto max-w-3xl space-y-2 sm:space-y-4">
           {messages.map((message) => {
             const messageParts = parseMessageLinks(message.text);
 
@@ -300,7 +356,7 @@ export default function ChatPage() {
                 className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-2 ${
                     message.isBot
                       ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
                       : ''
@@ -310,7 +366,7 @@ export default function ChatPage() {
                     color: useDarkText ? '#000000' : '#ffffff'
                   } : undefined}
                 >
-                  <p className="whitespace-pre-wrap">
+                  <p className="whitespace-pre-wrap text-sm sm:text-base">
                     {messageParts.map((part, index) => {
                       if (part.type === 'link' && part.url) {
                         return (
@@ -345,17 +401,24 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      {!isComplete && currentStep && (
-        <div className="border-t bg-white/90 backdrop-blur-sm px-4 py-4 dark:border-gray-700 dark:bg-gray-800/90">
+      {!isComplete && currentStep && showInput && (
+        <div
+          className="border-t bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-4 dark:border-gray-700 dark:bg-gray-800/90 flex-shrink-0"
+          style={{
+            paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))',
+          }}
+        >
           <div className="mx-auto max-w-3xl">
             {currentStep.input?.type === 'choice' && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {currentStep.input.choices?.map((choice) => (
                   <Button
                     key={choice.id}
                     color="light"
+                    size="sm"
                     disabled={isSubmitting}
                     onClick={() => handleChoiceClick(choice)}
+                    className="text-sm sm:text-base"
                   >
                     {choice.label}
                   </Button>
@@ -370,6 +433,7 @@ export default function ChatPage() {
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   disabled={isSubmitting}
+                  style={{ fontSize: '16px' }}
                 >
                   <option value="">Select your country...</option>
                   {countryCodes.map((country) => (
@@ -380,10 +444,12 @@ export default function ChatPage() {
                 </Select>
                 <Button
                   color="blue"
+                  size="sm"
                   disabled={isSubmitting || !userInput}
                   onClick={() => handleSubmit()}
+                  className="flex-shrink-0"
                 >
-                  <HiArrowRight className="h-5 w-5" />
+                  <HiArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </div>
             )}
@@ -391,19 +457,23 @@ export default function ChatPage() {
             {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
               <div className="flex gap-2">
                 <TextInput
+                  ref={inputRef}
                   className="flex-1"
                   placeholder={currentStep.input.placeholder || 'Type your answer...'}
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={isSubmitting}
+                  style={{ fontSize: '16px' }}
                 />
                 <Button
                   color="blue"
+                  size="sm"
                   disabled={isSubmitting || !userInput}
                   onClick={() => handleSubmit()}
+                  className="flex-shrink-0"
                 >
-                  <HiArrowRight className="h-5 w-5" />
+                  <HiArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </div>
             )}
@@ -411,10 +481,12 @@ export default function ChatPage() {
             {currentStep.input?.type === 'none' && !isComplete && (
               <Button
                 color="blue"
+                size="sm"
                 disabled={isSubmitting}
                 onClick={() => handleSubmit('')}
+                className="w-full sm:w-auto text-sm sm:text-base"
               >
-                Continue <HiArrowRight className="ml-2 h-4 w-4" />
+                Continue <HiArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             )}
           </div>
