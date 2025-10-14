@@ -246,7 +246,7 @@ export default function StepEditor({ step, onUpdate }: StepEditorProps) {
             ))}
           </Select>
           <p className="mt-1 text-xs text-gray-500">
-            Selecting a country will validate phone numbers based on that country's format
+            {"Selecting a country will validate phone numbers based on that country's format"}
           </p>
         </div>
       )}

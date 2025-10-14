@@ -127,7 +127,7 @@ export default function ProfilePage() {
                 Profile Information
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Update your account's profile information and email address
+                {"Update your account's profile information and email address"}
               </p>
             </div>
 
