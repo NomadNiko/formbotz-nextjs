@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Label, TextInput, Textarea, Select, Checkbox, Button } from 'flowbite-react';
 import { HiPlus, HiTrash } from 'react-icons/hi';
-import { Step, DataType, ChoiceOption } from '@/types';
+import { Step, DataType, ChoiceOption, Condition, ConditionalOperator, LogicalOperator } from '@/types';
 import { getStepTypeLabel, getDataTypeLabel } from '@/lib/utils/stepHelpers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -59,6 +59,64 @@ export default function StepEditor({ step, onUpdate }: StepEditorProps) {
     handleUpdate({
       input: { ...localStep.input, choices: newChoices },
     });
+  };
+
+  const handleAddCondition = () => {
+    const newCondition: Condition = {
+      variableName: '',
+      operator: ConditionalOperator.EQUALS,
+      value: '',
+    };
+    const currentLogic = localStep.conditionalLogic || {
+      showIf: [],
+      operator: LogicalOperator.AND,
+    };
+    handleUpdate({
+      conditionalLogic: {
+        ...currentLogic,
+        showIf: [...currentLogic.showIf, newCondition],
+      },
+    });
+  };
+
+  const handleUpdateCondition = (index: number, field: keyof Condition, value: string) => {
+    if (!localStep.conditionalLogic) return;
+    const newConditions = [...localStep.conditionalLogic.showIf];
+    newConditions[index] = { ...newConditions[index], [field]: value };
+    handleUpdate({
+      conditionalLogic: {
+        ...localStep.conditionalLogic,
+        showIf: newConditions,
+      },
+    });
+  };
+
+  const handleDeleteCondition = (index: number) => {
+    if (!localStep.conditionalLogic) return;
+    const newConditions = localStep.conditionalLogic.showIf.filter((_, i) => i !== index);
+    if (newConditions.length === 0) {
+      handleUpdate({ conditionalLogic: undefined });
+    } else {
+      handleUpdate({
+        conditionalLogic: {
+          ...localStep.conditionalLogic,
+          showIf: newConditions,
+        },
+      });
+    }
+  };
+
+  const handleToggleConditionalLogic = (enabled: boolean) => {
+    if (enabled) {
+      handleUpdate({
+        conditionalLogic: {
+          showIf: [],
+          operator: LogicalOperator.AND,
+        },
+      });
+    } else {
+      handleUpdate({ conditionalLogic: undefined });
+    }
   };
 
   return (
@@ -232,17 +290,113 @@ export default function StepEditor({ step, onUpdate }: StepEditorProps) {
         </div>
       )}
 
-      {/* Conditional Logic Preview */}
-      {localStep.conditionalLogic && (
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-          <h3 className="mb-2 font-semibold text-yellow-800 dark:text-yellow-200">
-            Conditional Logic
-          </h3>
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            This step has conditional logic applied
-          </p>
+      {/* Conditional Logic Editor */}
+      <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+        <div className="mb-3 flex items-center gap-2">
+          <Checkbox
+            id="enableConditionalLogic"
+            checked={!!localStep.conditionalLogic}
+            onChange={(e) => handleToggleConditionalLogic(e.target.checked)}
+          />
+          <Label htmlFor="enableConditionalLogic">
+            Enable Conditional Logic
+          </Label>
         </div>
-      )}
+        <p className="mb-3 text-xs text-gray-500">
+          Show this step only if certain conditions are met
+        </p>
+
+        {localStep.conditionalLogic && (
+          <div className="space-y-3">
+            <div>
+              <Label>Logic Operator</Label>
+              <Select
+                value={localStep.conditionalLogic.operator}
+                onChange={(e) =>
+                  handleUpdate({
+                    conditionalLogic: {
+                      ...localStep.conditionalLogic!,
+                      operator: e.target.value as LogicalOperator,
+                    },
+                  })
+                }
+              >
+                <option value={LogicalOperator.AND}>AND (all conditions must be true)</option>
+                <option value={LogicalOperator.OR}>OR (any condition can be true)</option>
+              </Select>
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <Label>Conditions</Label>
+                <Button size="xs" color="light" onClick={handleAddCondition}>
+                  <HiPlus className="mr-1 h-3 w-3" />
+                  Add Condition
+                </Button>
+              </div>
+
+              {localStep.conditionalLogic.showIf.map((condition, index) => (
+                <div key={index} className="mb-2 rounded border border-gray-200 p-3 dark:border-gray-700">
+                  <div className="mb-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <Label className="text-xs">Variable Name</Label>
+                      <TextInput
+                        sizing="sm"
+                        placeholder="e.g., rating"
+                        value={condition.variableName}
+                        onChange={(e) =>
+                          handleUpdateCondition(index, 'variableName', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Operator</Label>
+                      <Select
+                        sizing="sm"
+                        value={condition.operator}
+                        onChange={(e) =>
+                          handleUpdateCondition(index, 'operator', e.target.value)
+                        }
+                      >
+                        <option value={ConditionalOperator.EQUALS}>Equals</option>
+                        <option value={ConditionalOperator.NOT_EQUALS}>Not Equals</option>
+                        <option value={ConditionalOperator.CONTAINS}>Contains</option>
+                        <option value={ConditionalOperator.GREATER_THAN}>Greater Than</option>
+                        <option value={ConditionalOperator.LESS_THAN}>Less Than</option>
+                        <option value={ConditionalOperator.GREATER_THAN_OR_EQUAL}>
+                          Greater Than or Equal
+                        </option>
+                        <option value={ConditionalOperator.LESS_THAN_OR_EQUAL}>
+                          Less Than or Equal
+                        </option>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Value</Label>
+                      <TextInput
+                        sizing="sm"
+                        placeholder="e.g., 3"
+                        value={condition.value}
+                        onChange={(e) =>
+                          handleUpdateCondition(index, 'value', e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    size="xs"
+                    color="failure"
+                    onClick={() => handleDeleteCondition(index)}
+                  >
+                    <HiTrash className="mr-1 h-3 w-3" />
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

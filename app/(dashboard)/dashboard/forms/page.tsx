@@ -28,7 +28,7 @@ export default function FormsListPage() {
       } else {
         setError(data.error || 'Failed to fetch forms');
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to fetch forms');
     } finally {
       setIsLoading(false);
@@ -50,7 +50,7 @@ export default function FormsListPage() {
       } else {
         alert('Failed to delete form');
       }
-    } catch (_err) {
+    } catch {
       alert('Failed to delete form');
     }
   };

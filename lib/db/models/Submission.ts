@@ -50,7 +50,6 @@ const SubmissionSchema = new Schema<SubmissionDocument>(
       type: String,
       required: [true, 'Session ID is required'],
       unique: true,
-      index: true,
     },
     status: {
       type: String,
@@ -80,7 +79,6 @@ const SubmissionSchema = new Schema<SubmissionDocument>(
 // Compound indexes
 SubmissionSchema.index({ formId: 1, status: 1 });
 SubmissionSchema.index({ formId: 1, 'metadata.completedAt': -1 });
-SubmissionSchema.index({ sessionId: 1 });
 
 // Methods
 SubmissionSchema.methods.addAnswer = function (

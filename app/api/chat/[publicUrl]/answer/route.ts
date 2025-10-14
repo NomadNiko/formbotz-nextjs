@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { Form, Submission } from '@/lib/db/models';
 import { getNextStep } from '@/lib/utils/conditionalLogic';
+import { validateInput } from '@/lib/utils/validation';
 
 // POST /api/chat/[publicUrl]/answer - Submit an answer
 export async function POST(
@@ -43,6 +44,20 @@ export async function POST(
       return NextResponse.json({ error: 'Step not found' }, { status: 404 });
     }
 
+    // Validate input if step has data collection with specific data type
+    if (step.input?.type === 'text' && step.input?.dataType) {
+      const validation = validateInput(answer, step.input.dataType);
+      if (!validation.valid) {
+        return NextResponse.json(
+          {
+            error: validation.error,
+            validationError: true
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Save answer
     if (step.collect?.enabled && step.collect.variableName) {
       await submission.addAnswer(
@@ -59,8 +74,10 @@ export async function POST(
       await submission.addConversion(stepId);
     }
 
-    // Get collected data
-    const collectedData = submission.data as Record<string, unknown>;
+    // Get collected data - Convert Mongoose Map to plain object
+    const collectedData = Object.fromEntries(
+      Array.from(submission.data.entries())
+    ) as Record<string, unknown>;
 
     // Get next step
     const nextStep = getNextStep(step, form.steps, collectedData);

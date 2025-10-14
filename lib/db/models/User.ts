@@ -52,9 +52,6 @@ const UserSchema = new Schema<UserDocument>(
   }
 );
 
-// Indexes
-UserSchema.index({ email: 1 });
-
 // Prevent password from being returned in queries
 UserSchema.set('toJSON', {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

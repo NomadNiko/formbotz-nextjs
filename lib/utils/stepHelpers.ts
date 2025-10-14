@@ -96,6 +96,7 @@ export function createStepTemplate(type: StepType, order: number): Step {
             { id: uuidv4(), label: 'Let me fix something', value: false },
           ],
         },
+        collect: undefined,
       };
 
     case StepType.CLOSING:

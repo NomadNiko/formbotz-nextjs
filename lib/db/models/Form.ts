@@ -241,7 +241,6 @@ const FormSchema = new Schema<FormDocument>(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
     settings: {
       type: FormSettingsSchema,
@@ -259,7 +258,6 @@ const FormSchema = new Schema<FormDocument>(
 
 // Compound indexes
 FormSchema.index({ clientId: 1, status: 1 });
-FormSchema.index({ publicUrl: 1 });
 FormSchema.index({ 'steps.id': 1 });
 
 // Methods

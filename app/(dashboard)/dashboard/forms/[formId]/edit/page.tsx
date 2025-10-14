@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Button, Card, Spinner, Tabs, Badge } from 'flowbite-react';
+import { useParams } from 'next/navigation';
+import { Button, Card, Spinner, Badge } from 'flowbite-react';
 import {
   HiArrowLeft,
   HiSave,
   HiEye,
   HiGlobeAlt,
   HiPlus,
+  HiClipboardList,
 } from 'react-icons/hi';
 import Link from 'next/link';
 import { Form as IForm, Step } from '@/types';
@@ -18,7 +19,6 @@ import FormSettings from '@/components/builder/FormSettings';
 
 export default function FormEditorPage() {
   const params = useParams();
-  const router = useRouter();
   const formId = params.formId as string;
 
   const [form, setForm] = useState<IForm | null>(null);
@@ -46,7 +46,7 @@ export default function FormEditorPage() {
       } else {
         setError(data.error || 'Failed to fetch form');
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to fetch form');
     } finally {
       setIsLoading(false);
@@ -81,7 +81,7 @@ export default function FormEditorPage() {
       } else {
         setError(data.error || 'Failed to save form');
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to save form');
     } finally {
       setIsSaving(false);
@@ -115,7 +115,7 @@ export default function FormEditorPage() {
       } else {
         setError(data.error || `Failed to ${action} form`);
       }
-    } catch (_err) {
+    } catch {
       setError(`Failed to ${action} form`);
     }
   };
@@ -204,10 +204,18 @@ export default function FormEditorPage() {
         </div>
 
         <div className="flex gap-2">
-          <Button color="light" size="sm" disabled>
-            <HiEye className="mr-2 h-4 w-4" />
-            Preview
-          </Button>
+          <Link href={`/chat/${form.publicUrl}`} target="_blank">
+            <Button color="light" size="sm" disabled={!form.publicUrl}>
+              <HiEye className="mr-2 h-4 w-4" />
+              Preview
+            </Button>
+          </Link>
+          <Link href={`/dashboard/forms/${formId}/submissions`}>
+            <Button color="gray" size="sm">
+              <HiClipboardList className="mr-2 h-4 w-4" />
+              Submissions
+            </Button>
+          </Link>
           <Button
             color={form.status === 'published' ? 'warning' : 'success'}
             size="sm"

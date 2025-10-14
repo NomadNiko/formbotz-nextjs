@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from 'flowbite-react';
-import { HiPlus, HiTrash } from 'react-icons/hi';
+import { HiPlus, HiTrash, HiChevronUp, HiChevronDown } from 'react-icons/hi';
 import { Step, StepType } from '@/types';
 import { createStepTemplate, getStepTypeLabel } from '@/lib/utils/stepHelpers';
 
@@ -21,6 +21,7 @@ export default function StepList({
   onSelectStep,
   onDelete,
   onAdd,
+  onReorder,
 }: StepListProps) {
   const [showStepTypeMenu, setShowStepTypeMenu] = useState(false);
 
@@ -29,6 +30,24 @@ export default function StepList({
     onAdd(newStep);
     onSelectStep(newStep.id); // Auto-select the newly created step
     setShowStepTypeMenu(false);
+  };
+
+  const moveStepUp = (index: number) => {
+    if (index === 0) return;
+    const newSteps = [...steps];
+    [newSteps[index - 1], newSteps[index]] = [newSteps[index], newSteps[index - 1]];
+    // Update order numbers
+    const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
+    onReorder(reorderedSteps);
+  };
+
+  const moveStepDown = (index: number) => {
+    if (index === steps.length - 1) return;
+    const newSteps = [...steps];
+    [newSteps[index], newSteps[index + 1]] = [newSteps[index + 1], newSteps[index]];
+    // Update order numbers
+    const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
+    onReorder(reorderedSteps);
   };
 
   const getStepIcon = (type: StepType) => {
@@ -84,17 +103,42 @@ export default function StepList({
                 )}
               </div>
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (confirm('Delete this step?')) {
-                  onDelete(step.id);
-                }
-              }}
-              className="opacity-0 group-hover:opacity-100 rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              <HiTrash className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  moveStepUp(index);
+                }}
+                disabled={index === 0}
+                className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Move up"
+              >
+                <HiChevronUp className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  moveStepDown(index);
+                }}
+                disabled={index === steps.length - 1}
+                className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Move down"
+              >
+                <HiChevronDown className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm('Delete this step?')) {
+                    onDelete(step.id);
+                  }
+                }}
+                className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                title="Delete"
+              >
+                <HiTrash className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       ))}

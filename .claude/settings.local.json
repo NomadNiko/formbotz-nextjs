@@ -32,7 +32,13 @@
       "Bash(npx next lint:*)",
       "Bash(grep:*)",
       "mcp__playwright__browser_select_option",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(killall:*)",
+      "Bash(xargs kill:*)",
+      "Bash(ls:*)",
+      "Bash(timeout 60 pnpm build:*)",
+      "Bash(bun run:*)",
+      "mcp__playwright__browser_network_requests"
     ],
     "deny": [],
     "ask": []

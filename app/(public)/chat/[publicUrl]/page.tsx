@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Button, TextInput, Card, Progress, Spinner } from 'flowbite-react';
-import { HiArrowRight, HiArrowLeft } from 'react-icons/hi';
+import { HiArrowRight } from 'react-icons/hi';
 import { Step, Form as IForm } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
+import { parseMessageLinks } from '@/lib/utils/linkParser';
 
 interface Message {
   id: string;
@@ -68,7 +69,7 @@ export default function ChatPage() {
       } else {
         setError(data.error || 'Failed to start session');
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to connect to form');
     } finally {
       setIsLoading(false);
@@ -112,17 +113,12 @@ export default function ChatPage() {
 
     const answerToSubmit = answer !== undefined ? answer : userInput;
 
-    if (!answerToSubmit && currentStep.input?.type !== 'none') {
+    // Only reject undefined/null, not other falsy values like false or 0
+    if (currentStep.input?.type !== 'none' && (answerToSubmit === undefined || answerToSubmit === null || answerToSubmit === '')) {
       return;
     }
 
-    // Add user message if text input
-    if (currentStep.input?.type === 'text' && answerToSubmit) {
-      addUserMessage(String(answerToSubmit));
-    }
-
     setIsSubmitting(true);
-    setUserInput('');
 
     try {
       const response = await fetch(`/api/chat/${publicUrl}/answer`, {
@@ -138,6 +134,12 @@ export default function ChatPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Validation passed - now add user message and clear input
+        if (currentStep.input?.type === 'text' && answerToSubmit) {
+          addUserMessage(String(answerToSubmit));
+        }
+        setUserInput('');
+
         if (data.isComplete) {
           setIsComplete(true);
           if (form?.settings?.thankYouMessage) {
@@ -153,12 +155,18 @@ export default function ChatPage() {
           // Delay before showing next step
           setTimeout(() => {
             showStep(data.nextStep, data.collectedData || collectedData);
-          }, 500);
+          }, 1500);
         }
       } else {
-        setError(data.error || 'Failed to submit answer');
+        // Handle validation errors differently - show as bot message and allow retry
+        if (data.validationError) {
+          addBotMessage(data.error || 'Invalid input. Please try again.');
+          // Keep user input in the field so they can edit it
+        } else {
+          setError(data.error || 'Failed to submit answer');
+        }
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to submit answer');
     } finally {
       setIsSubmitting(false);
@@ -221,22 +229,47 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="mx-auto max-w-3xl space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-            >
+          {messages.map((message) => {
+            const messageParts = parseMessageLinks(message.text);
+
+            return (
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.isBot
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
-                    : 'bg-blue-600 text-white'
-                }`}
+                key={message.id}
+                className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
               >
-                <p className="whitespace-pre-wrap">{message.text}</p>
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                    message.isBot
+                      ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
+                      : 'bg-blue-600 text-white'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">
+                    {messageParts.map((part, index) => {
+                      if (part.type === 'link' && part.url) {
+                        return (
+                          <a
+                            key={index}
+                            href={part.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`underline hover:no-underline ${
+                              message.isBot
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-white font-semibold'
+                            }`}
+                          >
+                            {part.content}
+                          </a>
+                        );
+                      }
+                      return <span key={index}>{part.content}</span>;
+                    })}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
       </div>

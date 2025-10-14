@@ -28,50 +28,80 @@ export function evaluateCondition(
     return false;
   }
 
+  let result: boolean;
+
   switch (condition.operator) {
     case ConditionalOperator.EQUALS:
-      return value === targetValue;
+      // Handle type coercion for boolean comparisons
+      if (typeof value === 'boolean' && typeof targetValue === 'string') {
+        result = value === (targetValue === 'true');
+      } else if (typeof value === 'string' && typeof targetValue === 'boolean') {
+        result = (value === 'true') === targetValue;
+      } else {
+        result = value === targetValue;
+      }
+      break;
 
     case ConditionalOperator.NOT_EQUALS:
-      return value !== targetValue;
+      // Handle type coercion for boolean comparisons
+      if (typeof value === 'boolean' && typeof targetValue === 'string') {
+        result = value !== (targetValue === 'true');
+      } else if (typeof value === 'string' && typeof targetValue === 'boolean') {
+        result = (value === 'true') !== targetValue;
+      } else {
+        result = value !== targetValue;
+      }
+      break;
 
     case ConditionalOperator.CONTAINS:
-      return String(value)
+      result = String(value)
         .toLowerCase()
         .includes(String(targetValue).toLowerCase());
+      break;
 
     case ConditionalOperator.NOT_CONTAINS:
-      return !String(value)
+      result = !String(value)
         .toLowerCase()
         .includes(String(targetValue).toLowerCase());
+      break;
 
     case ConditionalOperator.GREATER_THAN:
-      return Number(value) > Number(targetValue);
+      result = Number(value) > Number(targetValue);
+      break;
 
     case ConditionalOperator.LESS_THAN:
-      return Number(value) < Number(targetValue);
+      result = Number(value) < Number(targetValue);
+      break;
 
     case ConditionalOperator.GREATER_THAN_OR_EQUAL:
-      return Number(value) >= Number(targetValue);
+      result = Number(value) >= Number(targetValue);
+      break;
 
     case ConditionalOperator.LESS_THAN_OR_EQUAL:
-      return Number(value) <= Number(targetValue);
+      result = Number(value) <= Number(targetValue);
+      break;
 
     case ConditionalOperator.IN:
       if (Array.isArray(targetValue)) {
-        return targetValue.includes(value);
+        result = targetValue.includes(value);
+      } else {
+        result = false;
       }
-      return false;
+      break;
 
     case ConditionalOperator.NOT_IN:
       if (Array.isArray(targetValue)) {
-        return !targetValue.includes(value);
+        result = !targetValue.includes(value);
+      } else {
+        result = true;
       }
-      return true;
+      break;
 
     default:
-      return false;
+      result = false;
   }
+
+  return result;
 }
 
 /**
@@ -111,7 +141,6 @@ export function shouldShowStep(step: Step, data: Record<string, unknown>): boole
   }
 
   const { showIf, operator } = step.conditionalLogic;
-
   return evaluateConditions(showIf, operator, data);
 }
 

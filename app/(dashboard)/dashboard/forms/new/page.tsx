@@ -34,7 +34,7 @@ export default function NewFormPage() {
       } else {
         setError(data.error || 'Failed to create form');
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to create form');
     } finally {
       setIsLoading(false);

@@ -48,7 +48,7 @@ export default function AllSubmissionsPage() {
       } else {
         setError(data.error || 'Failed to fetch submissions');
       }
-    } catch (_err) {
+    } catch {
       setError('Failed to fetch submissions');
     } finally {
       setIsLoading(false);

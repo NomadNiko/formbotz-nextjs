@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { FormStatus } from '@/types';
 
 // GET /api/forms - List all forms for the authenticated user
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
