@@ -287,38 +287,40 @@ export default function FormEditorPage() {
         </div>
 
         {/* Right: Settings/Preview */}
-        <div className="w-80 flex-shrink-0">
-          <Card className="h-full overflow-y-auto">
-            <FormSettings
-              settings={form.settings}
-              onUpdate={(settings) => setForm({ ...form, settings })}
-            />
+        <div className="w-80 flex-shrink-0 overflow-hidden">
+          <Card className="h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto">
+              <FormSettings
+                settings={form.settings}
+                onUpdate={(settings) => setForm({ ...form, settings })}
+              />
 
-            <div className="mt-6 border-t pt-6 dark:border-gray-700">
-              <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
-                Form Info
-              </h4>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Public URL
-                  </p>
-                  <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
-                    /chat/{form.publicUrl}
-                  </code>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Stats
-                  </p>
-                  <div className="mt-2 space-y-1 text-sm">
-                    <p>Views: {form.stats?.views || 0}</p>
-                    <p>Starts: {form.stats?.starts || 0}</p>
-                    <p>Completions: {form.stats?.completions || 0}</p>
-                    <p>
-                      Rate:{' '}
-                      {form.stats?.completionRate?.toFixed(1) || 0}%
+              <div className="mt-6 border-t pt-6 dark:border-gray-700">
+                <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+                  Form Info
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Public URL
                     </p>
+                    <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                      /chat/{form.publicUrl}
+                    </code>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Stats
+                    </p>
+                    <div className="mt-2 space-y-1 text-sm">
+                      <p>Views: {form.stats?.views || 0}</p>
+                      <p>Starts: {form.stats?.starts || 0}</p>
+                      <p>Completions: {form.stats?.completions || 0}</p>
+                      <p>
+                        Rate:{' '}
+                        {form.stats?.completionRate?.toFixed(1) || 0}%
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
