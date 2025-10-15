@@ -25,6 +25,7 @@ interface FormWithStats {
   status: FormStatus;
   steps: unknown[];
   updatedAt: Date;
+  publicUrl: string;
   submissionCount: number;
   completedCount: number;
   realCompletionRate: number;
