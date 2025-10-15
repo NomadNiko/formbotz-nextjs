@@ -503,7 +503,11 @@ export default function ChatPage() {
             </div>
           )}
 
+          {/* Scroll anchor */}
           <div ref={messagesEndRef} />
+
+          {/* Spacer to keep active chat midway up the screen */}
+          <div style={{ minHeight: '55vh' }} aria-hidden="true" />
         </div>
       </div>
 
