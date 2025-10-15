@@ -42,3 +42,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 CONDITIONAL_LOGIC_CHANGES.md
+FORM_ACTIONS_DESIGN.md
+INLINE_CHAT_INPUT_CHANGES.md

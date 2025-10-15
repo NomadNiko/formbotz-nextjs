@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Button, Progress, Spinner } from 'flowbite-react';
+import { Progress, Spinner } from 'flowbite-react';
 import { HiArrowRight } from 'react-icons/hi';
 import { Step, Form as IForm, TypingDelay, DataType } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
@@ -24,6 +24,7 @@ export default function ChatPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputBubbleRef = useRef<HTMLDivElement>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [form, setForm] = useState<IForm | null>(null);
@@ -61,9 +62,9 @@ export default function ChatPage() {
     return () => clearTimeout(timer);
   }, [messages, isTyping, scrollToBottom]);
 
-  // Focus input and scroll when it becomes visible
+  // Scroll when input becomes visible (for all input types)
   useEffect(() => {
-    if (showInput && inputRef.current && currentStep?.input?.type === 'text') {
+    if (showInput && currentStep) {
       // Small delay to ensure layout is stable
       const timer = setTimeout(() => {
         scrollToBottom();
@@ -247,7 +248,20 @@ export default function ChatPage() {
   };
 
   const handleInputFocus = () => {
-    setTimeout(scrollToBottom, 300);
+    // Scroll the input bubble to 25% from top of viewport
+    setTimeout(() => {
+      if (inputBubbleRef.current) {
+        inputBubbleRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        // Adjust to position at 1/4 down the screen
+        setTimeout(() => {
+          const offset = window.innerHeight * 0.25;
+          window.scrollBy({ top: -offset, behavior: 'smooth' });
+        }, 100);
+      }
+    }, 300);
   };
 
   const progress = form && form.steps ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100) : 0;
@@ -375,100 +389,124 @@ export default function ChatPage() {
             );
           })}
           {isTyping && <TypingIndicator />}
+
+          {/* Inline Input - Appears in message flow */}
+          {!isComplete && currentStep && showInput && (
+            <div className="px-4 py-2">
+              {/* Choice Buttons */}
+              {currentStep.input?.type === 'choice' && (
+                <div className="flex flex-wrap gap-2 justify-start">
+                  {currentStep.input.choices?.map((choice) => (
+                    <button
+                      key={choice.id}
+                      onClick={() => handleChoiceClick(choice)}
+                      disabled={isSubmitting}
+                      className="rounded-full px-4 py-2.5 text-[15px] font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:opacity-75"
+                      style={{
+                        backgroundColor: brandColor,
+                        color: useDarkText ? '#000000' : '#ffffff',
+                        minHeight: '44px',
+                      }}
+                    >
+                      {choice.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Country Code Select */}
+              {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
+                <div
+                  ref={inputBubbleRef}
+                  className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800"
+                >
+                  <div className="flex gap-2">
+                    <select
+                      className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onFocus={handleInputFocus}
+                      disabled={isSubmitting}
+                      style={{ fontSize: '16px' }}
+                    >
+                      <option value="">Select your country...</option>
+                      {countryCodes.map((country, index) => (
+                        <option key={`${country.country}-${index}`} value={`${country.country}|${country.code}`}>
+                          {country.country} ({country.code})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => handleSubmit()}
+                      disabled={isSubmitting || !userInput}
+                      className="flex-shrink-0 rounded-lg px-4 py-2.5 text-white disabled:opacity-50 disabled:cursor-not-allowed active:opacity-75"
+                      style={{ backgroundColor: brandColor, minHeight: '44px' }}
+                    >
+                      <HiArrowRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Text Input */}
+              {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
+                <div
+                  ref={inputBubbleRef}
+                  className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800"
+                >
+                  <div className="flex gap-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      placeholder={currentStep.input.placeholder || 'Type your answer...'}
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      onFocus={handleInputFocus}
+                      disabled={isSubmitting}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
+                      style={{ fontSize: '16px' }}
+                    />
+                    <button
+                      onClick={() => handleSubmit()}
+                      disabled={isSubmitting || !userInput}
+                      className="flex-shrink-0 rounded-lg px-4 py-2.5 text-white disabled:opacity-50 disabled:cursor-not-allowed active:opacity-75"
+                      style={{ backgroundColor: brandColor, minHeight: '44px' }}
+                    >
+                      <HiArrowRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Continue Button (for input type 'none') */}
+              {currentStep.input?.type === 'none' && (
+                <div className="flex justify-start">
+                  <button
+                    onClick={() => handleSubmit('')}
+                    disabled={isSubmitting}
+                    className="rounded-full px-6 py-2.5 text-[15px] font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:opacity-75"
+                    style={{
+                      backgroundColor: brandColor,
+                      color: useDarkText ? '#000000' : '#ffffff',
+                      minHeight: '44px',
+                    }}
+                  >
+                    Continue <HiArrowRight className="ml-2 inline h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Input Area - Fixed at Bottom */}
-      {!isComplete && currentStep && showInput && (
-        <div className="flex-shrink-0 border-t bg-white/95 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95 safe-bottom">
-          <div className="mx-auto max-w-3xl">
-            {currentStep.input?.type === 'choice' && (
-              <div className="flex flex-wrap gap-2">
-                {currentStep.input.choices?.map((choice) => (
-                  <Button
-                    key={choice.id}
-                    color="light"
-                    size="sm"
-                    disabled={isSubmitting}
-                    onClick={() => handleChoiceClick(choice)}
-                    className="flex-shrink-0"
-                  >
-                    {choice.label}
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
-              <div className="flex gap-2">
-                <select
-                  className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onFocus={handleInputFocus}
-                  disabled={isSubmitting}
-                  style={{ fontSize: '16px' }}
-                >
-                  <option value="">Select your country...</option>
-                  {countryCodes.map((country, index) => (
-                    <option key={`${country.country}-${index}`} value={`${country.country}|${country.code}`}>
-                      {country.country} ({country.code})
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={isSubmitting || !userInput}
-                  className="flex-shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <HiArrowRight className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
-            {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
-              <div className="flex gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                  placeholder={currentStep.input.placeholder || 'Type your answer...'}
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onFocus={handleInputFocus}
-                  disabled={isSubmitting}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
-                  style={{ fontSize: '16px' }}
-                />
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={isSubmitting || !userInput}
-                  className="flex-shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <HiArrowRight className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
-            {currentStep.input?.type === 'none' && !isComplete && (
-              <Button
-                color="blue"
-                size="sm"
-                disabled={isSubmitting}
-                onClick={() => handleSubmit('')}
-                className="w-full"
-              >
-                Continue <HiArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
         </div>
       </div>
     </div>
