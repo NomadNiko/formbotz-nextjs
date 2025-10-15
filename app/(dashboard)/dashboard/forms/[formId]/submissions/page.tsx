@@ -68,7 +68,11 @@ export default function SubmissionsPage() {
           const value = sub.data[key];
           // Escape commas and quotes in values
           if (value === undefined || value === null) return '';
-          const strValue = String(value);
+          let strValue = String(value);
+          // Format country code values (e.g., "United States|+1" -> "United States +1")
+          if (strValue.includes('|+')) {
+            strValue = strValue.replace('|', ' ');
+          }
           if (strValue.includes(',') || strValue.includes('"')) {
             return `"${strValue.replace(/"/g, '""')}"`;
           }
@@ -294,6 +298,8 @@ export default function SubmissionsPage() {
                             ? '(empty)'
                             : typeof value === 'boolean'
                             ? value ? 'Yes' : 'No'
+                            : String(value).includes('|+')
+                            ? String(value).replace('|', ' ')
                             : String(value)}
                         </p>
                       </div>

@@ -53,17 +53,34 @@ export const authOptions: AuthOptions = {
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // Initial sign in
       if (user) {
         token.id = user.id;
         token.role = user.role || 'client';
+        token.name = user.name;
+        token.email = user.email;
       }
+
+      // Handle session update (e.g., profile update)
+      if (trigger === 'update' && session) {
+        // Fetch fresh user data from database
+        await connectDB();
+        const updatedUser = await User.findById(token.id);
+        if (updatedUser) {
+          token.name = updatedUser.name;
+          token.email = updatedUser.email;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
       }
       return session;
     },

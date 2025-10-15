@@ -24,7 +24,14 @@ export function interpolateVariables(
     }
 
     // Convert to string
-    return String(value);
+    let stringValue = String(value);
+
+    // Format country code values (e.g., "United States|+1" -> "United States +1")
+    if (stringValue.includes('|+')) {
+      stringValue = stringValue.replace('|', ' ');
+    }
+
+    return stringValue;
   });
 }
 
@@ -85,7 +92,14 @@ export function buildValidationSummary(
 
   const lines = entries.map(([key, value]) => {
     const label = labels?.[key] || key;
-    return `- ${label}: ${value}`;
+    let displayValue = String(value);
+
+    // Format country code values (e.g., "United States|+1" -> "United States +1")
+    if (displayValue.includes('|+')) {
+      displayValue = displayValue.replace('|', ' ');
+    }
+
+    return `- ${label}: ${displayValue}`;
   });
 
   return `I got:\n\n${lines.join('\n')}\n\nIs this information correct?`;
