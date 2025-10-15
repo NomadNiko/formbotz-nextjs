@@ -45,15 +45,18 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicUrl]);
 
-  // Simple scroll behavior - scroll to bottom after messages update
+  // Only scroll when input becomes visible (after bot finishes responding)
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (showInput && currentStep && inputBubbleRef.current) {
       const timer = setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }, 100);
+        inputBubbleRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 200);
       return () => clearTimeout(timer);
     }
-  }, [messages.length, isTyping]);
+  }, [showInput, currentStep]);
 
   const startSession = async () => {
     try {
@@ -309,7 +312,7 @@ export default function ChatPage() {
           ...(backgroundImageUrl ? { backgroundColor: 'transparent' } : {})
         }}
       >
-        <div className="mx-auto max-w-3xl space-y-3 pb-[50vh]">
+        <div className="mx-auto max-w-3xl space-y-3 pb-[20vh]">
           {messages.map((message) => {
             const messageParts = parseMessageLinks(message.text);
 
@@ -362,7 +365,7 @@ export default function ChatPage() {
 
           {/* Inline Input - Appears in message flow */}
           {!isComplete && currentStep && showInput && (
-            <div className="px-4 py-2">
+            <div ref={inputBubbleRef} className="px-4 py-2">
               {/* Choice Buttons */}
               {currentStep.input?.type === 'choice' && (
                 <div className="flex flex-wrap gap-2 justify-start">
@@ -386,10 +389,7 @@ export default function ChatPage() {
 
               {/* Country Code Select */}
               {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
-                <div
-                  ref={inputBubbleRef}
-                  className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800"
-                >
+                <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800">
                   <div className="flex gap-2">
                     <select
                       className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
@@ -420,10 +420,7 @@ export default function ChatPage() {
 
               {/* Text Input */}
               {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
-                <div
-                  ref={inputBubbleRef}
-                  className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800"
-                >
+                <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800">
                   <div className="flex gap-2">
                     <input
                       ref={inputRef}
