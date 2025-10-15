@@ -5,22 +5,21 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ========================================
-   TYPOGRAPHY - ALEGREYA FONTS
+   TYPOGRAPHY - OXANIUM FONT
    ======================================== */
 
 @theme {
-  --font-family-sans: var(--font-alegreya-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-family-serif: var(--font-alegreya), ui-serif, Georgia, serif;
+  --font-family-sans: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Apply Alegreya Sans as default for most UI elements */
+/* Apply Oxanium as default for all elements */
 body {
-  font-family: var(--font-alegreya-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Use Alegreya (serif) for headings for elegant look */
+/* Headings use Oxanium */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-alegreya), ui-serif, Georgia, serif;
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
 }
 

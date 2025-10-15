@@ -1,22 +1,14 @@
 import { ThemeModeScript } from "flowbite-react";
 import type { Metadata } from "next";
-import { Alegreya, Alegreya_Sans } from "next/font/google";
+import { Oxanium } from "next/font/google";
 import { ThemeInit } from "../.flowbite-react/init";
 import SessionProvider from "@/components/providers/SessionProvider";
 import "./globals.css";
 
-const alegreya = Alegreya({
-  variable: "--font-alegreya",
+const oxanium = Oxanium({
+  variable: "--font-oxanium",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-});
-
-const alegreyaSans = Alegreya_Sans({
-  variable: "--font-alegreya-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700", "800", "900"],
-  style: ["normal", "italic"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -57,7 +49,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
-        className={`${alegreya.variable} ${alegreyaSans.variable} antialiased`}
+        className={`${oxanium.variable} antialiased`}
       >
         <ThemeInit />
         <SessionProvider>{children}</SessionProvider>

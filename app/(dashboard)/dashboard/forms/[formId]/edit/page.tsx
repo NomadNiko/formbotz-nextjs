@@ -259,7 +259,7 @@ export default function FormEditorPage() {
             isLeftSidebarCollapsed ? 'w-12' : 'w-80'
           }`}
         >
-          <Card className="h-full overflow-hidden relative">
+          <Card className="h-full relative">
             {isLeftSidebarCollapsed ? (
               <div className="flex h-full items-center justify-center">
                 <button
@@ -324,7 +324,7 @@ export default function FormEditorPage() {
                     </button>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto overflow-x-visible">
                   <StepList
                     steps={form.steps}
                     selectedStepId={selectedStepId}
