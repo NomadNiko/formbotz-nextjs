@@ -61,7 +61,6 @@ export async function POST(
     return NextResponse.json(
       {
         sessionId: newSessionId,
-        formId: form._id.toString(), // Pass formId for later submission creation
         form: {
           _id: form._id,
           name: form.name,
