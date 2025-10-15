@@ -400,8 +400,8 @@ export default function ChatPage() {
                   style={{ fontSize: '16px' }}
                 >
                   <option value="">Select your country...</option>
-                  {countryCodes.map((country) => (
-                    <option key={country.code} value={country.code}>
+                  {countryCodes.map((country, index) => (
+                    <option key={`${country.country}-${index}`} value={`${country.country}|${country.code}`}>
                       {country.country} ({country.code})
                     </option>
                   ))}

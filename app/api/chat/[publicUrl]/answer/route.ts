@@ -57,10 +57,19 @@ export async function POST(
       let countryCodeForValidation: string | undefined = undefined;
       if (step.input.dataType === 'phone') {
         // Look for any collected variable that might be a country code
+        // Format is now "Country Name|+Code" (e.g., "United States|+1")
         for (const [, value] of Object.entries(collectedData)) {
-          if (typeof value === 'string' && value.startsWith('+')) {
-            countryCodeForValidation = value;
-            break;
+          if (typeof value === 'string') {
+            // Check if it's the new format with pipe separator
+            if (value.includes('|') && value.split('|')[1]?.startsWith('+')) {
+              countryCodeForValidation = value.split('|')[1];
+              break;
+            }
+            // Legacy support: check if it's just a code starting with +
+            if (value.startsWith('+')) {
+              countryCodeForValidation = value;
+              break;
+            }
           }
         }
       }
