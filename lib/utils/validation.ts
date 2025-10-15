@@ -101,15 +101,26 @@ export function validateCountryCode(code: string): { valid: boolean; error?: str
 
   const trimmedCode = code.trim();
 
+  // Extract the actual country code from the format "Country Name|+Code"
+  let actualCode = trimmedCode;
+  if (trimmedCode.includes('|')) {
+    const parts = trimmedCode.split('|');
+    if (parts.length === 2 && parts[1]) {
+      actualCode = parts[1];
+    } else {
+      return { valid: false, error: "Invalid country code format." };
+    }
+  }
+
   // Country codes start with + and have 1-4 digits
   const countryCodeRegex = /^\+\d{1,4}$/;
 
-  if (!countryCodeRegex.test(trimmedCode)) {
+  if (!countryCodeRegex.test(actualCode)) {
     return { valid: false, error: "Invalid country code format." };
   }
 
   // Verify it exists in our country codes list
-  const country = getCountryByCode(trimmedCode);
+  const country = getCountryByCode(actualCode);
   if (!country) {
     return { valid: false, error: "Country code not recognized." };
   }
