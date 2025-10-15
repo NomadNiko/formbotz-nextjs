@@ -29,11 +29,9 @@ export async function POST(
 
     // Find or create submission
     let submission = await Submission.findOne({ sessionId });
-    let isFirstAnswer = false;
 
     if (!submission) {
       // This is the first answer - create submission now
-      isFirstAnswer = true;
 
       // Find form by publicUrl
       const form = await Form.findOne({

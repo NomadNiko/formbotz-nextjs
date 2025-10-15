@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { Form, Submission } from '@/lib/db/models';
 import { v4 as uuidv4 } from 'uuid';
+import { SubmissionStatus } from '@/types';
 
 // POST /api/chat/[publicUrl]/session - Start or resume a chat session
 export async function POST(
