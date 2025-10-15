@@ -200,7 +200,7 @@ const FormSettingsSchema = new Schema(
     thankYouMessage: String,
     enableProgressBar: { type: Boolean, default: true },
     allowBackNavigation: { type: Boolean, default: true },
-    emailNotifications: { type: Boolean, default: false },
+    emailNotifications: { type: Boolean, default: true },
   },
   { _id: false }
 );

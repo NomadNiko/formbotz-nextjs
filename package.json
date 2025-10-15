@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start:old": "next start",
-    "start": "next build && next start",
+    "start": "next start",
+    "start:build": "next build && next start",
+    "start:prod": "formbotz-maintenance-on && next build && formbotz-maintenance-off && next start",
     "lint": "next lint",
     "format": "prettier . --write",
     "format:check": "prettier . --check"

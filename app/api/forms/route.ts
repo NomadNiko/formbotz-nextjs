@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       settings: {
         enableProgressBar: true,
         allowBackNavigation: true,
+        emailNotifications: true,
       },
       stats: {
         views: 0,
