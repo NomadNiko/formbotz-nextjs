@@ -47,7 +47,7 @@ export default function DashboardNav() {
   };
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/login' });
+    signOut({ callbackUrl: '/' });
   };
 
   const navItems = [

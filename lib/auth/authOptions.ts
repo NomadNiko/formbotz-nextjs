@@ -63,13 +63,19 @@ export const authOptions: AuthOptions = {
       }
 
       // Handle session update (e.g., profile update)
-      if (trigger === 'update' && session) {
-        // Fetch fresh user data from database
-        await connectDB();
-        const updatedUser = await User.findById(token.id);
-        if (updatedUser) {
-          token.name = updatedUser.name;
-          token.email = updatedUser.email;
+      if (trigger === 'update') {
+        // If session data is passed, use it
+        if (session?.user) {
+          token.name = session.user.name;
+          token.email = session.user.email;
+        } else {
+          // Otherwise fetch fresh data from database
+          await connectDB();
+          const updatedUser = await User.findById(token.id);
+          if (updatedUser) {
+            token.name = updatedUser.name;
+            token.email = updatedUser.email;
+          }
         }
       }
 

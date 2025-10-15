@@ -43,8 +43,14 @@ export default function ProfilePage() {
 
       if (response.ok) {
         setProfileMessage('Profile updated successfully!');
-        // Trigger session refresh to fetch updated user data from database
-        await update();
+        // Trigger session refresh with updated data to force JWT token update
+        await update({
+          user: {
+            ...session?.user,
+            name: data.user.name,
+            email: data.user.email,
+          },
+        });
         setTimeout(() => setProfileMessage(''), 3000);
       } else {
         setProfileError(data.error || 'Failed to update profile');
