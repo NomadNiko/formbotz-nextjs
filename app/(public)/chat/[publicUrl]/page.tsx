@@ -45,33 +45,15 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicUrl]);
 
-  // Improved scroll behavior
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current && messagesContainerRef.current) {
-      // Use smooth scroll for better UX
-      messagesEndRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end'
-      });
-    }
-  }, []);
-
-  // Scroll when messages change or typing indicator appears
+  // Simple scroll behavior - scroll to bottom after messages update
   useEffect(() => {
-    const timer = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timer);
-  }, [messages, isTyping, scrollToBottom]);
-
-  // Scroll when input becomes visible (for all input types)
-  useEffect(() => {
-    if (showInput && currentStep) {
-      // Small delay to ensure layout is stable
+    if (messagesEndRef.current) {
       const timer = setTimeout(() => {
-        scrollToBottom();
-      }, 150);
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showInput, currentStep, scrollToBottom]);
+  }, [messages.length, isTyping]);
 
   const startSession = async () => {
     try {
@@ -248,20 +230,8 @@ export default function ChatPage() {
   };
 
   const handleInputFocus = () => {
-    // Scroll the input bubble to 25% from top of viewport
-    setTimeout(() => {
-      if (inputBubbleRef.current) {
-        inputBubbleRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-        // Adjust to position at 1/4 down the screen
-        setTimeout(() => {
-          const offset = window.innerHeight * 0.25;
-          window.scrollBy({ top: -offset, behavior: 'smooth' });
-        }, 100);
-      }
-    }, 300);
+    // Let mobile keyboard appear naturally
+    // The input is already in view from the scroll effect
   };
 
   const progress = form && form.steps ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100) : 0;
@@ -339,7 +309,7 @@ export default function ChatPage() {
           ...(backgroundImageUrl ? { backgroundColor: 'transparent' } : {})
         }}
       >
-        <div className="mx-auto max-w-3xl space-y-3">
+        <div className="mx-auto max-w-3xl space-y-3 pb-[50vh]">
           {messages.map((message) => {
             const messageParts = parseMessageLinks(message.text);
 
@@ -505,9 +475,6 @@ export default function ChatPage() {
 
           {/* Scroll anchor */}
           <div ref={messagesEndRef} />
-
-          {/* Spacer to keep active chat midway up the screen */}
-          <div style={{ minHeight: '55vh' }} aria-hidden="true" />
         </div>
       </div>
 
