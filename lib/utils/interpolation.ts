@@ -8,6 +8,9 @@
  * @param text - Text containing {variableName} placeholders
  * @param data - Object with collected data
  * @returns Text with variables replaced
+ *
+ * Note: Name values should already be title-cased when stored in the database,
+ * so this function just displays them as-is.
  */
 export function interpolateVariables(
   text: string,

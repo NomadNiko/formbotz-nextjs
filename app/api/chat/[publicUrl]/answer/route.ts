@@ -4,6 +4,7 @@ import { Form, Submission, User } from '@/lib/db/models';
 import { getNextStep } from '@/lib/utils/conditionalLogic';
 import { validateInput } from '@/lib/utils/validation';
 import { sendSubmissionNotification } from '@/lib/utils/email';
+import { formatByDataType } from '@/lib/utils/formatting';
 import { format } from 'date-fns';
 
 // POST /api/chat/[publicUrl]/answer - Submit an answer
@@ -51,8 +52,13 @@ export async function POST(
       Array.from(submission.data.entries())
     ) as Record<string, unknown>;
 
-    // Validate input if step has data collection with specific data type
+    // Format and validate input if step has data collection with specific data type
+    let formattedAnswer = answer;
+
     if (step.input?.type === 'text' && step.input?.dataType) {
+      // Apply formatting based on data type (e.g., title case for names)
+      formattedAnswer = formatByDataType(answer, step.input.dataType);
+
       // For phone validation, check if there's a country code in collected data
       let countryCodeForValidation: string | undefined = undefined;
       if (step.input.dataType === 'phone') {
@@ -74,7 +80,7 @@ export async function POST(
         }
       }
 
-      const validation = validateInput(answer, step.input.dataType, countryCodeForValidation);
+      const validation = validateInput(formattedAnswer, step.input.dataType, countryCodeForValidation);
       if (!validation.valid) {
         return NextResponse.json(
           {
@@ -86,15 +92,15 @@ export async function POST(
       }
     }
 
-    // Save answer
+    // Save formatted answer
     if (step.collect?.enabled && step.collect.variableName) {
       await submission.addAnswer(
         stepId,
-        answer,
+        formattedAnswer,
         step.collect.variableName
       );
     } else {
-      await submission.addAnswer(stepId, answer);
+      await submission.addAnswer(stepId, formattedAnswer);
     }
 
     // Track conversion if enabled

@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from 'flowbite-react';
-import { HiPlus, HiTrash, HiChevronUp, HiChevronDown, HiDuplicate } from 'react-icons/hi';
-import { Step, StepType } from '@/types';
-import { createStepTemplate, getStepTypeLabel } from '@/lib/utils/stepHelpers';
+import { HiTrash, HiChevronUp, HiChevronDown, HiDuplicate } from 'react-icons/hi';
+import { Step } from '@/types';
+import { getStepTypeLabel, getStepIcon } from '@/lib/utils/stepHelpers';
 import { v4 as uuidv4 } from 'uuid';
 
 interface StepListProps {
@@ -13,7 +11,6 @@ interface StepListProps {
   onSelectStep: (stepId: string) => void;
   onReorder: (steps: Step[]) => void;
   onDelete: (stepId: string) => void;
-  onAdd: (step: Step) => void;
 }
 
 export default function StepList({
@@ -21,17 +18,8 @@ export default function StepList({
   selectedStepId,
   onSelectStep,
   onDelete,
-  onAdd,
   onReorder,
 }: StepListProps) {
-  const [showStepTypeMenu, setShowStepTypeMenu] = useState(false);
-
-  const handleAddStep = (type: StepType) => {
-    const newStep = createStepTemplate(type, steps.length);
-    onAdd(newStep);
-    onSelectStep(newStep.id); // Auto-select the newly created step
-    setShowStepTypeMenu(false);
-  };
 
   const moveStepUp = (index: number) => {
     if (index === 0) return;
@@ -102,25 +90,6 @@ export default function StepList({
 
     // Select the newly cloned step
     onSelectStep(clonedStep.id);
-  };
-
-  const getStepIcon = (type: StepType) => {
-    switch (type) {
-      case StepType.INFO:
-        return '💬';
-      case StepType.MULTIPLE_CHOICE:
-        return '🎯';
-      case StepType.YES_NO:
-        return '✅';
-      case StepType.STRING_INPUT:
-        return '✏️';
-      case StepType.VALIDATION:
-        return '🔍';
-      case StepType.CLOSING:
-        return '👋';
-      default:
-        return '📝';
-    }
   };
 
   return (
@@ -207,36 +176,6 @@ export default function StepList({
           </div>
         </div>
       ))}
-
-      {/* Add Step Button */}
-      <div className="relative">
-        <Button
-          color="light"
-          className="w-full"
-          onClick={() => setShowStepTypeMenu(!showStepTypeMenu)}
-        >
-          <HiPlus className="mr-2 h-4 w-4" />
-          Add Step
-        </Button>
-
-        {showStepTypeMenu && (
-          <div className="absolute top-full left-0 right-0 mt-1 z-10 rounded-lg border bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-            <div className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 border-b dark:border-gray-700">
-              Choose step type
-            </div>
-            {Object.values(StepType).map((type) => (
-              <button
-                key={type}
-                onClick={() => handleAddStep(type)}
-                className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                <span className="mr-2">{getStepIcon(type)}</span>
-                {getStepTypeLabel(type)}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

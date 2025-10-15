@@ -14,10 +14,11 @@ import {
   HiChevronRight,
 } from 'react-icons/hi';
 import Link from 'next/link';
-import { Form as IForm, Step } from '@/types';
+import { Form as IForm, Step, StepType } from '@/types';
 import StepList from '@/components/builder/StepList';
 import StepEditor from '@/components/builder/StepEditor';
 import FormSettings from '@/components/builder/FormSettings';
+import { getStepTypeLabel, getStepIcon, createStepTemplate } from '@/lib/utils/stepHelpers';
 
 export default function FormEditorPage() {
   const params = useParams();
@@ -31,6 +32,7 @@ export default function FormEditorPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
+  const [showAddStepMenu, setShowAddStepMenu] = useState(false);
 
   useEffect(() => {
     fetchForm();
@@ -124,13 +126,14 @@ export default function FormEditorPage() {
     }
   };
 
-  const handleAddStep = (step: Step) => {
+  const handleAddStep = (type: StepType) => {
     if (!form) return;
+    const newStep = createStepTemplate(type, form.steps.length);
     setForm({
       ...form,
-      steps: [...form.steps, step],
+      steps: [...form.steps, newStep],
     });
-    setSelectedStepId(step.id);
+    setSelectedStepId(newStep.id);
   };
 
   const handleUpdateStep = (updatedStep: Step) => {
@@ -272,9 +275,46 @@ export default function FormEditorPage() {
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-lg font-semibold">Steps</h3>
                   <div className="flex gap-1">
-                    <Button size="xs" color="blue">
-                      <HiPlus className="h-4 w-4" />
-                    </Button>
+                    <div className="relative">
+                      <Button
+                        size="xs"
+                        color="blue"
+                        onClick={() => setShowAddStepMenu(!showAddStepMenu)}
+                      >
+                        <HiPlus className="h-4 w-4" />
+                      </Button>
+
+                      {showAddStepMenu && (
+                        <>
+                          {/* Backdrop to close menu when clicking outside */}
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setShowAddStepMenu(false)}
+                          />
+                          {/* Popover to the right */}
+                          <div className="absolute left-full top-0 ml-2 z-20 w-64 rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+                            <div className="px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 border-b dark:border-gray-700">
+                              Choose step type
+                            </div>
+                            <div className="py-1">
+                              {Object.values(StepType).map((type) => (
+                                <button
+                                  key={type}
+                                  onClick={() => {
+                                    handleAddStep(type);
+                                    setShowAddStepMenu(false);
+                                  }}
+                                  className="flex w-full items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <span className="mr-3 text-lg">{getStepIcon(type)}</span>
+                                  <span>{getStepTypeLabel(type)}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <button
                       onClick={() => setIsLeftSidebarCollapsed(true)}
                       className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
@@ -291,7 +331,6 @@ export default function FormEditorPage() {
                     onSelectStep={setSelectedStepId}
                     onReorder={handleReorderSteps}
                     onDelete={handleDeleteStep}
-                    onAdd={handleAddStep}
                   />
                 </div>
               </div>

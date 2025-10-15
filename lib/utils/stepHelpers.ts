@@ -134,6 +134,21 @@ export function getStepTypeLabel(type: StepType): string {
 }
 
 /**
+ * Get step type icon emoji
+ */
+export function getStepIcon(type: StepType): string {
+  const icons: Record<StepType, string> = {
+    [StepType.INFO]: '💬',
+    [StepType.MULTIPLE_CHOICE]: '🎯',
+    [StepType.YES_NO]: '✅',
+    [StepType.STRING_INPUT]: '✏️',
+    [StepType.VALIDATION]: '🔍',
+    [StepType.CLOSING]: '👋',
+  };
+  return icons[type];
+}
+
+/**
  * Get data type display name
  */
 export function getDataTypeLabel(type: DataType): string {
