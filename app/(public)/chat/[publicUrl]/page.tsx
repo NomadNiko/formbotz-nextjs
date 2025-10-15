@@ -255,7 +255,7 @@ export default function ChatPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950">
-        <div className="relative h-screen w-full sm:h-[95vh] sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl sm:border sm:border-gray-200 dark:sm:border-gray-800 overflow-hidden">
+        <div className="relative h-screen w-full sm:h-[95vh] sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl overflow-hidden">
           <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-gray-900">
             <Spinner size="xl" />
           </div>
@@ -267,7 +267,7 @@ export default function ChatPage() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
-        <div className="relative w-full sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl sm:border sm:border-gray-200 dark:sm:border-gray-800 overflow-hidden">
+        <div className="relative w-full sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl overflow-hidden">
           <div className="flex items-center justify-center bg-gray-50 p-8 dark:bg-gray-900">
             <div className="max-w-md rounded-lg border border-red-200 bg-white p-6 dark:border-red-800 dark:bg-gray-800">
               <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Error</h2>
@@ -286,7 +286,7 @@ export default function ChatPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950">
       {/* Mobile Container - Centered on Desktop */}
-      <div className="relative h-screen w-full sm:h-[95vh] sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl sm:border sm:border-gray-200 dark:sm:border-gray-800 overflow-hidden">
+      <div className="relative h-screen w-full sm:h-[95vh] sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl overflow-hidden">
         <div
           ref={chatContainerRef}
           className="flex h-full flex-col overflow-hidden bg-gray-50 dark:bg-gray-900"

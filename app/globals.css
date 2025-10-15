@@ -5,6 +5,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ========================================
+   TYPOGRAPHY - ALEGREYA FONTS
+   ======================================== */
+
+@theme {
+  --font-family-sans: var(--font-alegreya-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-family-serif: var(--font-alegreya), ui-serif, Georgia, serif;
+}
+
+/* Apply Alegreya Sans as default for most UI elements */
+body {
+  font-family: var(--font-alegreya-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Use Alegreya (serif) for headings for elegant look */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-alegreya), ui-serif, Georgia, serif;
+  font-weight: 700;
+}
+
+/* ========================================
    MOBILE OPTIMIZATIONS
    ======================================== */
 

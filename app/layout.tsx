@@ -1,18 +1,22 @@
 import { ThemeModeScript } from "flowbite-react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Alegreya, Alegreya_Sans } from "next/font/google";
 import { ThemeInit } from "../.flowbite-react/init";
 import SessionProvider from "@/components/providers/SessionProvider";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const alegreya = Alegreya({
+  variable: "--font-alegreya",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const alegreyaSans = Alegreya_Sans({
+  variable: "--font-alegreya-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -53,7 +57,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${alegreya.variable} ${alegreyaSans.variable} antialiased`}
       >
         <ThemeInit />
         <SessionProvider>{children}</SessionProvider>
