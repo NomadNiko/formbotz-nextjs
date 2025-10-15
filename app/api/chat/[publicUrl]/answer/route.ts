@@ -6,13 +6,14 @@ import { validateInput } from '@/lib/utils/validation';
 import { sendSubmissionNotification } from '@/lib/utils/email';
 import { formatByDataType } from '@/lib/utils/formatting';
 import { format } from 'date-fns';
+import { SubmissionStatus } from '@/types';
 
 // POST /api/chat/[publicUrl]/answer - Submit an answer
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ publicUrl: string }> }
 ) {
-  await params; // Await params to comply with Next.js 15
+  const { publicUrl } = await params;
   try {
     const body = await request.json();
     const { sessionId, stepId, answer } = body;
@@ -26,13 +27,45 @@ export async function POST(
 
     await connectDB();
 
-    // Find submission
-    const submission = await Submission.findOne({ sessionId });
+    // Find or create submission
+    let submission = await Submission.findOne({ sessionId });
+    let isFirstAnswer = false;
+
     if (!submission) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      );
+      // This is the first answer - create submission now
+      isFirstAnswer = true;
+
+      // Find form by publicUrl
+      const form = await Form.findOne({
+        publicUrl,
+        status: 'published',
+      });
+
+      if (!form) {
+        return NextResponse.json(
+          { error: 'Form not found' },
+          { status: 404 }
+        );
+      }
+
+      // Create submission
+      submission = await Submission.create({
+        formId: form._id,
+        sessionId,
+        status: SubmissionStatus.IN_PROGRESS,
+        data: new Map(),
+        metadata: {
+          startedAt: new Date(),
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          conversions: [],
+          timeSpentPerStep: [],
+        },
+        stepHistory: [],
+      });
+
+      // Increment starts count on first answer
+      await form.incrementStarts();
     }
 
     // Find form

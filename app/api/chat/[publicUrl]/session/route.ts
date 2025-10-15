@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import { Form, Submission } from '@/lib/db/models';
 import { v4 as uuidv4 } from 'uuid';
-import { SubmissionStatus } from '@/types';
 
 // POST /api/chat/[publicUrl]/session - Start or resume a chat session
 export async function POST(
@@ -54,30 +53,14 @@ export async function POST(
       }
     }
 
-    // Create new session
+    // Create new session (but don't save to database yet)
+    // Submission will be created on first answer to avoid empty submissions
     const newSessionId = uuidv4();
-
-    const submission = await Submission.create({
-      formId: form._id,
-      sessionId: newSessionId,
-      status: SubmissionStatus.IN_PROGRESS,
-      data: new Map(),
-      metadata: {
-        startedAt: new Date(),
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        conversions: [],
-        timeSpentPerStep: [],
-      },
-      stepHistory: [],
-    });
-
-    // Increment starts count
-    await form.incrementStarts();
 
     return NextResponse.json(
       {
-        sessionId: submission.sessionId,
+        sessionId: newSessionId,
+        formId: form._id.toString(), // Pass formId for later submission creation
         form: {
           _id: form._id,
           name: form.name,
