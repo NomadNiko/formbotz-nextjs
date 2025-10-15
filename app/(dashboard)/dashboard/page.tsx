@@ -11,15 +11,32 @@ import {
   HiChartBar,
   HiCheckCircle,
   HiClock,
-  HiDuplicate,
-  HiExternalLink,
   HiX,
 } from 'react-icons/hi';
 import { getCurrentUser } from '@/lib/auth/session';
 import connectDB from '@/lib/db/mongodb';
 import { Form, Submission } from '@/lib/db/models';
 import { FormStatus, SubmissionStatus } from '@/types';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+
+interface FormWithStats {
+  _id: unknown;
+  name: string;
+  status: FormStatus;
+  steps: unknown[];
+  updatedAt: Date;
+  submissionCount: number;
+  completedCount: number;
+  realCompletionRate: number;
+}
+
+interface SubmissionWithForm {
+  _id: unknown;
+  formId: unknown;
+  status: SubmissionStatus;
+  createdAt: Date;
+  data?: Record<string, unknown>;
+}
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -45,7 +62,6 @@ export default async function DashboardPage() {
   const totalSubmissions = allSubmissions.length;
   const completedSubmissions = allSubmissions.filter(s => s.status === SubmissionStatus.COMPLETED).length;
   const inProgressSubmissions = allSubmissions.filter(s => s.status === SubmissionStatus.IN_PROGRESS).length;
-  const abandonedSubmissions = allSubmissions.filter(s => s.status === SubmissionStatus.ABANDONED).length;
 
   // Real completion rate from actual submissions
   const completionRate = totalSubmissions > 0
@@ -84,9 +100,6 @@ export default async function DashboardPage() {
     new Date(s.createdAt).getTime() >= sevenDaysAgo.getTime()
   );
   const recentCompletions = recentSubmissions.filter(s => s.status === SubmissionStatus.COMPLETED).length;
-
-  // Get top 5 recent forms
-  const recentForms = allForms.slice(0, 5);
 
   // Get top 5 recent submissions
   const latestSubmissions = allSubmissions
@@ -264,7 +277,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {formStats.map((form: any) => (
+              {formStats.map((form: FormWithStats) => (
                 <div
                   key={String(form._id)}
                   className="rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-900/50"
@@ -377,7 +390,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {latestSubmissions.map((submission: any) => {
+              {latestSubmissions.map((submission: SubmissionWithForm) => {
                 const form = formMap.get(String(submission.formId));
                 const isCompleted = submission.status === SubmissionStatus.COMPLETED;
                 const isAbandoned = submission.status === SubmissionStatus.ABANDONED;
