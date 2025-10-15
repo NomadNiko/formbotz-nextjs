@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Button, Card, Spinner, Badge } from 'flowbite-react';
+import { Button, Card, Spinner, Badge, Modal, Label, TextInput } from 'flowbite-react';
 import {
   HiArrowLeft,
   HiSave,
@@ -12,6 +12,7 @@ import {
   HiClipboardList,
   HiChevronLeft,
   HiChevronRight,
+  HiPencil,
 } from 'react-icons/hi';
 import Link from 'next/link';
 import { Form as IForm, Step, StepType } from '@/types';
@@ -34,6 +35,9 @@ export default function FormEditorPage() {
   const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
   const [showAddStepMenu, setShowAddStepMenu] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [newFormName, setNewFormName] = useState('');
+  const [isRenaming, setIsRenaming] = useState(false);
 
   useEffect(() => {
     fetchForm();
@@ -175,6 +179,42 @@ export default function FormEditorPage() {
     });
   };
 
+  const handleOpenRenameModal = () => {
+    setNewFormName(form?.name || '');
+    setShowRenameModal(true);
+  };
+
+  const handleRename = async () => {
+    if (!form || !newFormName.trim()) return;
+
+    setIsRenaming(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch(`/api/forms/${formId}/rename`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newFormName.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setForm(data.form);
+        setShowRenameModal(false);
+        setSuccessMessage('Form renamed successfully! The public URL has been updated.');
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } else {
+        setError(data.error || 'Failed to rename form');
+      }
+    } catch {
+      setError('Failed to rename form');
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
   const selectedStep = form?.steps.find((s) => s.id === selectedStepId);
 
   // Calculate available variables for the selected step
@@ -211,9 +251,18 @@ export default function FormEditorPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {form.name}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {form.name}
+              </h1>
+              <button
+                onClick={handleOpenRenameModal}
+                className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                title="Rename form"
+              >
+                <HiPencil className="h-4 w-4" />
+              </button>
+            </div>
             <div className="flex items-center gap-2 mt-1">
               {form.status === 'published' ? (
                 <Badge color="success">Published</Badge>
@@ -446,6 +495,70 @@ export default function FormEditorPage() {
           </Card>
         </div>
       </div>
+
+      {/* Rename Modal */}
+      <Modal show={showRenameModal} onClose={() => setShowRenameModal(false)} size="md">
+        <div className="p-6">
+          <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">
+            Rename Form
+          </h3>
+
+          <div className="space-y-4">
+            <div className="rounded-lg bg-yellow-50 p-4 dark:bg-yellow-900/20">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                ⚠️ <strong>Warning:</strong> Changing the form name will change the public URL and break any existing links that have been shared.
+              </p>
+              {form?.status === 'published' && (
+                <p className="mt-2 text-sm text-yellow-800 dark:text-yellow-200">
+                  This form is currently <strong>published</strong>. Any shared links will stop working after renaming.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="formName">New Form Name</Label>
+              </div>
+              <TextInput
+                id="formName"
+                type="text"
+                placeholder="Enter new form name"
+                value={newFormName}
+                onChange={(e) => setNewFormName(e.target.value)}
+                required
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newFormName.trim()) {
+                    handleRename();
+                  }
+                }}
+              />
+            </div>
+
+            {form?.publicUrl && (
+              <div className="text-sm">
+                <p className="font-medium text-gray-700 dark:text-gray-300">Current URL:</p>
+                <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                  /chat/{form.publicUrl}
+                </code>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <Button color="gray" onClick={() => setShowRenameModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              color="blue"
+              onClick={handleRename}
+              disabled={isRenaming || !newFormName.trim()}
+            >
+              {isRenaming ? 'Renaming...' : 'Rename Form'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

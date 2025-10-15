@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button, Card, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell } from 'flowbite-react';
-import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink, HiClipboardList } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink, HiClipboardList, HiDuplicate } from 'react-icons/hi';
 import { Form as IForm } from '@/types';
 import { format } from 'date-fns';
 
@@ -13,6 +13,7 @@ export default function FormsListPage() {
   const [forms, setForms] = useState<IForm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchForms();
@@ -52,6 +53,31 @@ export default function FormsListPage() {
       }
     } catch {
       alert('Failed to delete form');
+    }
+  };
+
+  const handleDuplicate = async (formId: string) => {
+    setDuplicatingId(formId);
+
+    try {
+      const response = await fetch(`/api/forms/${formId}/duplicate`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Refresh the forms list to show the new duplicate
+        await fetchForms();
+        // Navigate to edit the new form
+        router.push(`/dashboard/forms/${data.form._id}/edit`);
+      } else {
+        alert(data.error || 'Failed to duplicate form');
+      }
+    } catch {
+      alert('Failed to duplicate form');
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -161,6 +187,7 @@ export default function FormsListPage() {
                           onClick={() =>
                             router.push(`/dashboard/forms/${form._id}/edit`)
                           }
+                          title="Edit form"
                         >
                           <HiPencil className="h-4 w-4" />
                         </Button>
@@ -171,6 +198,7 @@ export default function FormsListPage() {
                             onClick={() =>
                               window.open(`/chat/${form.publicUrl}`, '_blank')
                             }
+                            title="View live form"
                           >
                             <HiExternalLink className="h-4 w-4" />
                           </Button>
@@ -181,13 +209,28 @@ export default function FormsListPage() {
                           onClick={() =>
                             router.push(`/dashboard/forms/${form._id}/submissions`)
                           }
+                          title="View submissions"
                         >
                           <HiClipboardList className="h-4 w-4" />
                         </Button>
                         <Button
                           size="xs"
+                          color="light"
+                          onClick={() => handleDuplicate(form._id!)}
+                          disabled={duplicatingId === form._id}
+                          title="Duplicate form"
+                        >
+                          {duplicatingId === form._id ? (
+                            <Spinner size="sm" />
+                          ) : (
+                            <HiDuplicate className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          size="xs"
                           color="failure"
                           onClick={() => handleDelete(form._id!)}
+                          title="Delete form"
                         >
                           <HiTrash className="h-4 w-4" />
                         </Button>

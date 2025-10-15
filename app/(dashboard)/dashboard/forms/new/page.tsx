@@ -83,6 +83,9 @@ export default function NewFormPage() {
               }
               required
             />
+            <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-400">
+              ⚠️ Choose a short, generic name. Changing the name later will change the public URL and break any existing links.
+            </p>
           </div>
 
           <div>
