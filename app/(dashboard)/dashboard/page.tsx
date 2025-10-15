@@ -19,6 +19,10 @@ import { Form, Submission } from '@/lib/db/models';
 import { FormStatus, SubmissionStatus } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 
+// Force dynamic rendering - always fetch fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface FormWithStats {
   _id: unknown;
   name: string;
