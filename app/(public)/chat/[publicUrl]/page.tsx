@@ -392,7 +392,7 @@ export default function ChatPage() {
             {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
               <div className="flex gap-2">
                 <select
-                  className="flex-1 rounded-lg border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                  className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onFocus={handleInputFocus}
@@ -406,15 +406,13 @@ export default function ChatPage() {
                     </option>
                   ))}
                 </select>
-                <Button
-                  color="blue"
-                  size="sm"
-                  disabled={isSubmitting || !userInput}
+                <button
                   onClick={() => handleSubmit()}
-                  className="flex-shrink-0 px-4"
+                  disabled={isSubmitting || !userInput}
+                  className="flex-shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <HiArrowRight className="h-5 w-5" />
-                </Button>
+                </button>
               </div>
             )}
 
@@ -423,7 +421,7 @@ export default function ChatPage() {
                 <input
                   ref={inputRef}
                   type="text"
-                  className="flex-1 rounded-lg border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder={currentStep.input.placeholder || 'Type your answer...'}
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
@@ -436,15 +434,13 @@ export default function ChatPage() {
                   spellCheck="false"
                   style={{ fontSize: '16px' }}
                 />
-                <Button
-                  color="blue"
-                  size="sm"
-                  disabled={isSubmitting || !userInput}
+                <button
                   onClick={() => handleSubmit()}
-                  className="flex-shrink-0 px-4"
+                  disabled={isSubmitting || !userInput}
+                  className="flex-shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <HiArrowRight className="h-5 w-5" />
-                </Button>
+                </button>
               </div>
             )}
 
