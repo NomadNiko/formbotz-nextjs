@@ -10,9 +10,10 @@ import { v4 as uuidv4 } from 'uuid';
 interface StepEditorProps {
   step: Step;
   onUpdate: (step: Step) => void;
+  availableVariables?: string[]; // Variables collected in previous steps
 }
 
-export default function StepEditor({ step, onUpdate }: StepEditorProps) {
+export default function StepEditor({ step, onUpdate, availableVariables = [] }: StepEditorProps) {
   const [localStep, setLocalStep] = useState<Step>(step);
 
   const handleUpdate = (updates: Partial<Step>) => {
@@ -340,14 +341,26 @@ export default function StepEditor({ step, onUpdate }: StepEditorProps) {
                   <div className="mb-2 grid grid-cols-3 gap-2">
                     <div>
                       <Label className="text-xs">Variable Name</Label>
-                      <TextInput
-                        sizing="sm"
-                        placeholder="e.g., rating"
-                        value={condition.variableName}
-                        onChange={(e) =>
-                          handleUpdateCondition(index, 'variableName', e.target.value)
-                        }
-                      />
+                      {availableVariables.length > 0 ? (
+                        <Select
+                          sizing="sm"
+                          value={condition.variableName}
+                          onChange={(e) =>
+                            handleUpdateCondition(index, 'variableName', e.target.value)
+                          }
+                        >
+                          <option value="">Select variable...</option>
+                          {availableVariables.map((varName) => (
+                            <option key={varName} value={varName}>
+                              {varName}
+                            </option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <div className="text-xs text-gray-500 italic py-1">
+                          No variables collected yet. Add steps with data collection first.
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label className="text-xs">Operator</Label>

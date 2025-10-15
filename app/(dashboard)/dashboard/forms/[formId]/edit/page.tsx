@@ -19,6 +19,7 @@ import StepList from '@/components/builder/StepList';
 import StepEditor from '@/components/builder/StepEditor';
 import FormSettings from '@/components/builder/FormSettings';
 import { getStepTypeLabel, getStepIcon, createStepTemplate } from '@/lib/utils/stepHelpers';
+import { getAvailableVariables, validateFormConditionalLogic } from '@/lib/utils/formValidation';
 
 export default function FormEditorPage() {
   const params = useParams();
@@ -65,6 +66,16 @@ export default function FormEditorPage() {
     setIsSaving(true);
     setError('');
     setSuccessMessage('');
+
+    // Validate conditional logic before saving
+    const validation = validateFormConditionalLogic(form.steps);
+    if (!validation.isValid) {
+      setError('Please check conditional logic in all steps. Some steps reference variables that haven\'t been collected yet.');
+      setIsSaving(false);
+      // Auto-scroll to error message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     try {
       const response = await fetch(`/api/forms/${formId}`, {
@@ -165,6 +176,12 @@ export default function FormEditorPage() {
   };
 
   const selectedStep = form?.steps.find((s) => s.id === selectedStepId);
+
+  // Calculate available variables for the selected step
+  const selectedStepIndex = form?.steps.findIndex((s) => s.id === selectedStepId) ?? -1;
+  const availableVariables = form && selectedStepIndex >= 0
+    ? getAvailableVariables(form.steps, selectedStepIndex)
+    : [];
 
   if (isLoading) {
     return (
@@ -342,7 +359,12 @@ export default function FormEditorPage() {
         <div className="flex-1 overflow-hidden">
           <Card className="h-full overflow-y-auto">
             {selectedStep ? (
-              <StepEditor key={selectedStep.id} step={selectedStep} onUpdate={handleUpdateStep} />
+              <StepEditor
+                key={selectedStep.id}
+                step={selectedStep}
+                onUpdate={handleUpdateStep}
+                availableVariables={availableVariables}
+              />
             ) : (
               <div className="flex h-full items-center justify-center text-gray-500">
                 <div className="text-center">
