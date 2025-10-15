@@ -135,73 +135,74 @@ export default function StepList({
           }`}
           onClick={() => onSelectStep(step.id)}
         >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-2">
-              <span className="text-2xl">{getStepIcon(step.type)}</span>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-500">
-                    Step {index + 1}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {getStepTypeLabel(step.type)}
-                  </span>
-                </div>
-                <p className="mt-1 line-clamp-2 text-sm text-gray-700 dark:text-gray-300">
-                  {step.display.messages[0]?.text || 'Empty message'}
-                </p>
-                {step.collect?.variableName && (
-                  <span className="mt-1 inline-block rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                    {step.collect.variableName}
-                  </span>
-                )}
+          {/* Action buttons row at top */}
+          <div className="mb-2 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                moveStepUp(index);
+              }}
+              disabled={index === 0}
+              className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Move up"
+            >
+              <HiChevronUp className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                moveStepDown(index);
+              }}
+              disabled={index === steps.length - 1}
+              className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Move down"
+            >
+              <HiChevronDown className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                cloneStep(index);
+              }}
+              className="rounded p-1 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+              title="Clone step"
+            >
+              <HiDuplicate className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm('Delete this step?')) {
+                  onDelete(step.id);
+                }
+              }}
+              className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+              title="Delete"
+            >
+              <HiTrash className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Content below */}
+          <div className="flex items-start gap-2">
+            <span className="text-2xl">{getStepIcon(step.type)}</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-gray-500">
+                  Step {index + 1}
+                </span>
+                <span className="text-xs text-gray-400">
+                  {getStepTypeLabel(step.type)}
+                </span>
               </div>
-            </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  moveStepUp(index);
-                }}
-                disabled={index === 0}
-                className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move up"
-              >
-                <HiChevronUp className="h-4 w-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  moveStepDown(index);
-                }}
-                disabled={index === steps.length - 1}
-                className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move down"
-              >
-                <HiChevronDown className="h-4 w-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  cloneStep(index);
-                }}
-                className="rounded p-1 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                title="Clone step"
-              >
-                <HiDuplicate className="h-4 w-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm('Delete this step?')) {
-                    onDelete(step.id);
-                  }
-                }}
-                className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                title="Delete"
-              >
-                <HiTrash className="h-4 w-4" />
-              </button>
+              <p className="mt-1 line-clamp-2 text-sm text-gray-700 dark:text-gray-300">
+                {step.display.messages[0]?.text || 'Empty message'}
+              </p>
+              {step.collect?.variableName && (
+                <span className="mt-1 inline-block rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                  {step.collect.variableName}
+                </span>
+              )}
             </div>
           </div>
         </div>
