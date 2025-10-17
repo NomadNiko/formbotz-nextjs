@@ -121,8 +121,9 @@ export default function StepEditor({ step, onUpdate, availableVariables = [] }: 
   };
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="flex h-full flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 border-b border-gray-200 dark:border-gray-700 mb-6">
         <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
           Edit Step
         </h2>
@@ -133,6 +134,8 @@ export default function StepEditor({ step, onUpdate, availableVariables = [] }: 
         </div>
       </div>
 
+      {/* Scrollable Content */}
+      <div className="space-y-6 flex-1">
       {/* Message */}
       <div>
         <div className="mb-2 block">
@@ -409,6 +412,7 @@ export default function StepEditor({ step, onUpdate, availableVariables = [] }: 
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
