@@ -178,6 +178,7 @@ const StepSchema = new Schema<Step>(
       rules: [NextStepRuleSchema],
       default: String,
     },
+    replayTarget: String,
     tracking: TrackingConfigSchema,
     createdAt: Date,
     updatedAt: Date,

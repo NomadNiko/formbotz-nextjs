@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Progress, Spinner } from 'flowbite-react';
 import { HiArrowRight } from 'react-icons/hi';
-import { Step, Form as IForm, TypingDelay, DataType } from '@/types';
+import { Step, StepType, Form as IForm, TypingDelay, DataType } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
 import { parseMessageLinks } from '@/lib/utils/linkParser';
 import TypingIndicator from '@/components/chat/TypingIndicator';
@@ -39,6 +39,7 @@ export default function ChatPage() {
   const [error, setError] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [showInput, setShowInput] = useState(false);
+  const [replayContext, setReplayContext] = useState<{ replayStepId: string; targetStep: Step } | null>(null);
 
   useEffect(() => {
     startSession();
@@ -106,8 +107,24 @@ export default function ChatPage() {
     const delayMs = getTypingDelayMs();
     setShowInput(false);
 
+    // Check if this is a REPLAY step
+    let stepToDisplay = step;
+    let isReplay = false;
+
+    if (step.type === StepType.REPLAY && step.replayTarget && form) {
+      // Find the target step by ID
+      const targetStep = form.steps.find(s => s.id === step.replayTarget);
+      if (targetStep) {
+        stepToDisplay = targetStep;
+        isReplay = true;
+        setReplayContext({ replayStepId: step.id, targetStep });
+      }
+    } else {
+      setReplayContext(null);
+    }
+
     if (delayMs === 0) {
-      step.display.messages.forEach((msg) => {
+      stepToDisplay.display.messages.forEach((msg) => {
         const interpolatedText = interpolateVariables(msg.text, data);
         addBotMessageImmediate(interpolatedText);
       });
@@ -116,7 +133,7 @@ export default function ChatPage() {
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
-        step.display.messages.forEach((msg) => {
+        stepToDisplay.display.messages.forEach((msg) => {
           const interpolatedText = interpolateVariables(msg.text, data);
           addBotMessageImmediate(interpolatedText);
         });
@@ -168,7 +185,10 @@ export default function ChatPage() {
 
     const answerToSubmit = answer !== undefined ? answer : userInput;
 
-    if (currentStep.input?.type !== 'none' && (answerToSubmit === undefined || answerToSubmit === null || answerToSubmit === '')) {
+    // Determine which step we're actually answering
+    const stepToAnswer = replayContext ? replayContext.targetStep : currentStep;
+
+    if (stepToAnswer.input?.type !== 'none' && (answerToSubmit === undefined || answerToSubmit === null || answerToSubmit === '')) {
       return;
     }
 
@@ -180,8 +200,9 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
-          stepId: currentStep.id,
+          stepId: stepToAnswer.id,
           answer: answerToSubmit,
+          replayStepId: replayContext?.replayStepId,
         }),
       });
 
@@ -238,6 +259,9 @@ export default function ChatPage() {
   };
 
   const progress = form && form.steps ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100) : 0;
+
+  // Use target step for input if in replay context
+  const stepForInput = replayContext ? replayContext.targetStep : currentStep;
 
   if (isLoading) {
     return (
@@ -364,12 +388,12 @@ export default function ChatPage() {
           {isTyping && <TypingIndicator />}
 
           {/* Inline Input - Appears in message flow */}
-          {!isComplete && currentStep && showInput && (
+          {!isComplete && stepForInput && showInput && (
             <div ref={inputBubbleRef} className="px-4 py-2">
               {/* Choice Buttons */}
-              {currentStep.input?.type === 'choice' && (
+              {stepForInput.input?.type === 'choice' && (
                 <div className="flex flex-wrap gap-2 justify-start">
-                  {currentStep.input.choices?.map((choice) => (
+                  {stepForInput.input.choices?.map((choice) => (
                     <button
                       key={choice.id}
                       onClick={() => handleChoiceClick(choice)}
@@ -388,7 +412,7 @@ export default function ChatPage() {
               )}
 
               {/* Country Code Select */}
-              {currentStep.input?.type === 'text' && currentStep.input?.dataType === DataType.COUNTRY_CODE && (
+              {stepForInput.input?.type === 'text' && stepForInput.input?.dataType === DataType.COUNTRY_CODE && (
                 <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800">
                   <div className="flex gap-2">
                     <select
@@ -419,14 +443,14 @@ export default function ChatPage() {
               )}
 
               {/* Text Input */}
-              {currentStep.input?.type === 'text' && currentStep.input?.dataType !== DataType.COUNTRY_CODE && (
+              {stepForInput.input?.type === 'text' && stepForInput.input?.dataType !== DataType.COUNTRY_CODE && (
                 <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800">
                   <div className="flex gap-2">
                     <input
                       ref={inputRef}
                       type="text"
                       className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      placeholder={currentStep.input.placeholder || 'Type your answer...'}
+                      placeholder={stepForInput.input.placeholder || 'Type your answer...'}
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       onKeyPress={handleKeyPress}
@@ -451,7 +475,7 @@ export default function ChatPage() {
               )}
 
               {/* Continue Button (for input type 'none') */}
-              {currentStep.input?.type === 'none' && (
+              {stepForInput.input?.type === 'none' && (
                 <div className="flex justify-start">
                   <button
                     onClick={() => handleSubmit('')}

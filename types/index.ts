@@ -5,7 +5,7 @@ export enum StepType {
   MULTIPLE_CHOICE = 'multipleChoice',
   YES_NO = 'yesNo',
   STRING_INPUT = 'stringInput',
-  VALIDATION = 'validation',
+  REPLAY = 'replay',
   CLOSING = 'closing',
 }
 
@@ -163,6 +163,7 @@ export interface Step {
     rules: NextStepRule[];
     default?: string; // default next step ID
   };
+  replayTarget?: string; // for REPLAY type: target step ID
 
   // Tracking
   tracking?: TrackingConfig;
@@ -297,6 +298,7 @@ export interface SubmitAnswerRequest {
   sessionId: string;
   stepId: string;
   answer: any;
+  replayStepId?: string; // if answering a replayed step, the ID of the REPLAY step
 }
 
 export interface SubmitAnswerResponse {

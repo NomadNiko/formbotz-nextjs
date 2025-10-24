@@ -19,8 +19,8 @@ import { Form as IForm, Step, StepType } from '@/types';
 import StepList from '@/components/builder/StepList';
 import StepEditor from '@/components/builder/StepEditor';
 import FormSettings from '@/components/builder/FormSettings';
-import { getStepTypeLabel, getStepIcon, createStepTemplate } from '@/lib/utils/stepHelpers';
-import { getAvailableVariables, validateFormConditionalLogic } from '@/lib/utils/formValidation';
+import { getStepTypeLabel, getStepIcon, createStepTemplate, validateAndFixReplayTargets } from '@/lib/utils/stepHelpers';
+import { getAvailableVariables, validateFormConditionalLogic, validateMessageVariables } from '@/lib/utils/formValidation';
 
 export default function FormEditorPage() {
   const params = useParams();
@@ -81,6 +81,31 @@ export default function FormEditorPage() {
       return;
     }
 
+    // Validate and fix replay targets
+    const { steps: fixedSteps, errors: replayErrors } = validateAndFixReplayTargets(form.steps);
+
+    // Validate message variables (non-blocking warnings)
+    const { warnings: messageWarnings } = validateMessageVariables(fixedSteps);
+
+    // Collect all warnings to show to user
+    const allWarnings: string[] = [];
+    if (replayErrors.length > 0) {
+      allWarnings.push('Replay target issues found and fixed:');
+      allWarnings.push(...replayErrors.map(e => `  • ${e}`));
+    }
+    if (messageWarnings.length > 0) {
+      if (allWarnings.length > 0) allWarnings.push(''); // Add blank line
+      allWarnings.push('Variable warnings in message text:');
+      allWarnings.push(...messageWarnings.map(w => `  • ${w}`));
+    }
+
+    // Show warnings if any (but continue saving)
+    if (allWarnings.length > 0) {
+      setError(allWarnings.join('\n'));
+      // Update form with fixed steps
+      setForm({ ...form, steps: fixedSteps });
+    }
+
     try {
       const response = await fetch(`/api/forms/${formId}`, {
         method: 'PATCH',
@@ -88,7 +113,7 @@ export default function FormEditorPage() {
         body: JSON.stringify({
           name: form.name,
           description: form.description,
-          steps: form.steps,
+          steps: fixedSteps,
           settings: form.settings,
         }),
       });
@@ -161,13 +186,23 @@ export default function FormEditorPage() {
 
   const handleDeleteStep = (stepId: string) => {
     if (!form) return;
-    const newSteps = form.steps.filter((s) => s.id !== stepId);
+
+    // Filter out the deleted step
+    const filteredSteps = form.steps.filter((s) => s.id !== stepId);
+
+    // Update order numbers (replay targets by ID remain valid)
+    const reorderedSteps = filteredSteps.map((step, index) => ({
+      ...step,
+      order: index,
+    }));
+
     setForm({
       ...form,
-      steps: newSteps,
+      steps: reorderedSteps,
     });
-    if (selectedStepId === stepId && newSteps.length > 0) {
-      setSelectedStepId(newSteps[0].id);
+
+    if (selectedStepId === stepId && reorderedSteps.length > 0) {
+      setSelectedStepId(reorderedSteps[0].id);
     }
   };
 
@@ -308,7 +343,7 @@ export default function FormEditorPage() {
       {/* Messages */}
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-800 dark:bg-red-900 dark:text-red-200">
-          {error}
+          <pre className="whitespace-pre-wrap font-sans text-sm">{error}</pre>
         </div>
       )}
       {successMessage && (
@@ -413,6 +448,7 @@ export default function FormEditorPage() {
                 step={selectedStep}
                 onUpdate={handleUpdateStep}
                 availableVariables={availableVariables}
+                allSteps={form.steps}
               />
             ) : (
               <div className="flex h-full items-center justify-center text-gray-500">

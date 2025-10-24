@@ -77,26 +77,19 @@ export function createStepTemplate(type: StepType, order: number): Step {
         },
       };
 
-    case StepType.VALIDATION:
+    case StepType.REPLAY:
       return {
         ...baseStep,
-        type: StepType.VALIDATION,
+        type: StepType.REPLAY,
         outputType: OutputType.STRING_QUESTION,
         display: {
-          messages: [
-            {
-              text: 'Please confirm your information is correct:',
-            },
-          ],
+          messages: [{ text: 'Replaying previous step...' }],
         },
         input: {
-          type: 'choice',
-          choices: [
-            { id: uuidv4(), label: 'Yes, looks good!', value: true },
-            { id: uuidv4(), label: 'Let me fix something', value: false },
-          ],
+          type: 'none',
         },
         collect: undefined,
+        replayTarget: undefined, // User will select the target step
       };
 
     case StepType.CLOSING:
@@ -127,7 +120,7 @@ export function getStepTypeLabel(type: StepType): string {
     [StepType.MULTIPLE_CHOICE]: 'Multiple Choice',
     [StepType.YES_NO]: 'Yes/No Question',
     [StepType.STRING_INPUT]: 'Text Input',
-    [StepType.VALIDATION]: 'Validation',
+    [StepType.REPLAY]: 'Replay Step',
     [StepType.CLOSING]: 'Closing Message',
   };
   return labels[type];
@@ -142,7 +135,7 @@ export function getStepIcon(type: StepType): string {
     [StepType.MULTIPLE_CHOICE]: '🎯',
     [StepType.YES_NO]: '✅',
     [StepType.STRING_INPUT]: '✏️',
-    [StepType.VALIDATION]: '🔍',
+    [StepType.REPLAY]: '🔄',
     [StepType.CLOSING]: '👋',
   };
   return icons[type];
@@ -195,11 +188,57 @@ export function validateStep(step: Step): string[] {
     errors.push('Variable name is required when data collection is enabled');
   }
 
+  if (step.type === StepType.REPLAY && !step.replayTarget) {
+    errors.push('Replay step must have a target step');
+  }
+
   return errors;
 }
 
 /**
+ * Validate and fix replay targets in a form
+ * Returns fixed steps and any errors found
+ */
+export function validateAndFixReplayTargets(steps: Step[]): {
+  steps: Step[];
+  errors: string[];
+} {
+  const errors: string[] = [];
+  const stepIdToOrder = new Map<string, number>();
+
+  // Build a map of step ID to order
+  steps.forEach((step) => {
+    stepIdToOrder.set(step.id, step.order);
+  });
+
+  const fixedSteps = steps.map((step) => {
+    if (step.type !== StepType.REPLAY || !step.replayTarget) {
+      return step;
+    }
+
+    const targetOrder = stepIdToOrder.get(step.replayTarget);
+
+    // Check if target step exists
+    if (targetOrder === undefined) {
+      errors.push(`Step ${step.order + 1} (REPLAY) points to a non-existent step`);
+      return { ...step, replayTarget: undefined };
+    }
+
+    // Check if target is before this step
+    if (targetOrder >= step.order) {
+      errors.push(`Step ${step.order + 1} (REPLAY) cannot replay a later step`);
+      return { ...step, replayTarget: undefined };
+    }
+
+    return step;
+  });
+
+  return { steps: fixedSteps, errors };
+}
+
+/**
  * Reorder steps after drag and drop
+ * Note: replay targets now use step IDs, so they remain stable across reordering
  */
 export function reorderSteps(
   steps: Step[],
@@ -210,7 +249,7 @@ export function reorderSteps(
   const [removed] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed);
 
-  // Update order numbers
+  // Simply update order numbers - replay targets (by ID) remain valid
   return result.map((step, index) => ({
     ...step,
     order: index,

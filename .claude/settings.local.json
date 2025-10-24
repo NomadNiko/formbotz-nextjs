@@ -38,7 +38,8 @@
       "Bash(ls:*)",
       "Bash(timeout 60 pnpm build:*)",
       "Bash(bun run:*)",
-      "mcp__playwright__browser_network_requests"
+      "mcp__playwright__browser_network_requests",
+      "Bash(timeout 120 npm run build:*)"
     ],
     "deny": [],
     "ask": []

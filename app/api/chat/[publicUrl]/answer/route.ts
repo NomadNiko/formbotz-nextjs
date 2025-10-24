@@ -16,7 +16,7 @@ export async function POST(
   const { publicUrl } = await params;
   try {
     const body = await request.json();
-    const { sessionId, stepId, answer } = body;
+    const { sessionId, stepId, answer, replayStepId } = body;
 
     if (!sessionId || !stepId) {
       return NextResponse.json(
@@ -144,8 +144,19 @@ export async function POST(
       Array.from(submission.data.entries())
     ) as Record<string, unknown>;
 
+    // Determine which step to use for next step calculation
+    // If we're in a replay context, use the replay step for navigation
+    // Otherwise, use the current step
+    let stepForNavigation = step;
+    if (replayStepId) {
+      const replayStep = form.steps.find((s: { id: string }) => s.id === replayStepId);
+      if (replayStep) {
+        stepForNavigation = replayStep;
+      }
+    }
+
     // Get next step
-    const nextStep = getNextStep(step, form.steps, collectedData);
+    const nextStep = getNextStep(stepForNavigation, form.steps, collectedData);
 
     // If no next step, mark as complete
     if (!nextStep) {

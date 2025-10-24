@@ -1,8 +1,8 @@
 'use client';
 
 import { HiTrash, HiChevronUp, HiChevronDown, HiDuplicate } from 'react-icons/hi';
-import { Step } from '@/types';
-import { getStepTypeLabel, getStepIcon } from '@/lib/utils/stepHelpers';
+import { Step, StepType } from '@/types';
+import { getStepTypeLabel, getStepIcon, reorderSteps } from '@/lib/utils/stepHelpers';
 import { v4 as uuidv4 } from 'uuid';
 
 interface StepListProps {
@@ -23,19 +23,13 @@ export default function StepList({
 
   const moveStepUp = (index: number) => {
     if (index === 0) return;
-    const newSteps = [...steps];
-    [newSteps[index - 1], newSteps[index]] = [newSteps[index], newSteps[index - 1]];
-    // Update order numbers
-    const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
+    const reorderedSteps = reorderSteps(steps, index, index - 1);
     onReorder(reorderedSteps);
   };
 
   const moveStepDown = (index: number) => {
     if (index === steps.length - 1) return;
-    const newSteps = [...steps];
-    [newSteps[index], newSteps[index + 1]] = [newSteps[index + 1], newSteps[index]];
-    // Update order numbers
-    const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
+    const reorderedSteps = reorderSteps(steps, index, index + 1);
     onReorder(reorderedSteps);
   };
 
@@ -84,7 +78,7 @@ export default function StepList({
     const newSteps = [...steps];
     newSteps.splice(index + 1, 0, clonedStep);
 
-    // Update order numbers for all steps
+    // Update order numbers (replay targets by ID remain valid)
     const reorderedSteps = newSteps.map((step, i) => ({ ...step, order: i }));
     onReorder(reorderedSteps);
 
@@ -167,11 +161,25 @@ export default function StepList({
               <p className="mt-1 line-clamp-2 text-sm text-gray-700 dark:text-gray-300">
                 {step.display.messages[0]?.text || 'Empty message'}
               </p>
-              {step.collect?.variableName && (
-                <span className="mt-1 inline-block rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                  {step.collect.variableName}
-                </span>
-              )}
+              <div className="mt-1 flex flex-wrap gap-1">
+                {step.collect?.variableName && (
+                  <span className="inline-block rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                    {step.collect.variableName}
+                  </span>
+                )}
+                {step.type === StepType.REPLAY && step.replayTarget !== undefined && (() => {
+                  const targetStep = steps.find(s => s.id === step.replayTarget);
+                  return targetStep ? (
+                    <span className="inline-block rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                      🔄 Replay: Step {targetStep.order + 1}
+                    </span>
+                  ) : (
+                    <span className="inline-block rounded bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900 dark:text-red-300">
+                      🔄 Replay: Invalid target
+                    </span>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </div>

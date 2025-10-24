@@ -1,4 +1,5 @@
 import { Step } from '@/types';
+import { extractVariables } from './interpolation';
 
 /**
  * Get all variables that are collected before a given step index
@@ -94,4 +95,65 @@ export function getAllFormVariables(steps: Step[]): Map<string, { stepIndex: num
   });
 
   return variableMap;
+}
+
+/**
+ * Validate that all variables referenced in step messages exist and are available
+ * @param steps - All form steps
+ * @returns Validation result with warnings (non-blocking)
+ */
+export function validateMessageVariables(steps: Step[]): {
+  warnings: string[];
+  invalidSteps: number[];
+} {
+  const warnings: string[] = [];
+  const invalidSteps: number[] = [];
+  const allCollectedVariables = new Set<string>();
+
+  // Build a set of all variables that are ever collected in the form
+  steps.forEach((step) => {
+    if (step.collect?.enabled && step.collect.variableName) {
+      allCollectedVariables.add(step.collect.variableName);
+    }
+  });
+
+  // Check each step's messages
+  steps.forEach((step, index) => {
+    const stepNumber = index + 1;
+    const availableVariables = getAvailableVariables(steps, index);
+
+    // Extract variables from all messages in this step
+    const allVariablesInMessages = new Set<string>();
+    step.display.messages.forEach((message) => {
+      const variables = extractVariables(message.text);
+      variables.forEach((v) => allVariablesInMessages.add(v));
+    });
+
+    // Check each variable used in messages
+    allVariablesInMessages.forEach((variableName) => {
+      // Check 1: Variable doesn't exist anywhere in the form
+      if (!allCollectedVariables.has(variableName)) {
+        warnings.push(
+          `Step ${stepNumber}: Variable "{${variableName}}" in message text is never collected in this form`
+        );
+        if (!invalidSteps.includes(index)) {
+          invalidSteps.push(index);
+        }
+      }
+      // Check 2: Variable exists but isn't available at this point
+      else if (!availableVariables.includes(variableName)) {
+        warnings.push(
+          `Step ${stepNumber}: Variable "{${variableName}}" in message text hasn't been collected yet (will show as {${variableName}} to users)`
+        );
+        if (!invalidSteps.includes(index)) {
+          invalidSteps.push(index);
+        }
+      }
+    });
+  });
+
+  return {
+    warnings,
+    invalidSteps,
+  };
 }

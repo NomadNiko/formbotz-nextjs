@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Label, TextInput, Textarea, Select, Checkbox, Button } from 'flowbite-react';
 import { HiPlus, HiTrash } from 'react-icons/hi';
-import { Step, DataType, ChoiceOption, Condition, ConditionalOperator, LogicalOperator } from '@/types';
+import { Step, StepType, DataType, ChoiceOption, Condition, ConditionalOperator, LogicalOperator } from '@/types';
 import { getStepTypeLabel, getDataTypeLabel } from '@/lib/utils/stepHelpers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,10 +11,16 @@ interface StepEditorProps {
   step: Step;
   onUpdate: (step: Step) => void;
   availableVariables?: string[]; // Variables collected in previous steps
+  allSteps?: Step[]; // All steps in the form (for replay target selection)
 }
 
-export default function StepEditor({ step, onUpdate, availableVariables = [] }: StepEditorProps) {
+export default function StepEditor({ step, onUpdate, availableVariables = [], allSteps = [] }: StepEditorProps) {
   const [localStep, setLocalStep] = useState<Step>(step);
+
+  // Sync localStep when step prop changes (e.g., after deletion/reordering of other steps)
+  useEffect(() => {
+    setLocalStep(step);
+  }, [step]);
 
   const handleUpdate = (updates: Partial<Step>) => {
     const updated = { ...localStep, ...updates };
@@ -291,6 +297,53 @@ export default function StepEditor({ step, onUpdate, availableVariables = [] }: 
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Replay Target Selector */}
+      {localStep.type === StepType.REPLAY && (
+        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+          <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
+            Replay Target
+          </h3>
+          <p className="mb-3 text-xs text-gray-500">
+            Select which previous step to replay when this step is executed
+          </p>
+
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="replayTarget">Target Step</Label>
+            </div>
+            {allSteps.filter(s => s.order < localStep.order).length > 0 ? (
+              <Select
+                id="replayTarget"
+                value={localStep.replayTarget || ''}
+                onChange={(e) =>
+                  handleUpdate({
+                    replayTarget: e.target.value || undefined,
+                  })
+                }
+              >
+                <option value="">Select a step to replay...</option>
+                {allSteps
+                  .filter(s => s.order < localStep.order)
+                  .sort((a, b) => a.order - b.order)
+                  .map((s) => {
+                    const variableName = s.collect?.variableName || '';
+                    const label = `Step ${s.order + 1}: ${getStepTypeLabel(s.type)}${variableName ? ` - ${variableName}` : ''}`;
+                    return (
+                      <option key={s.id} value={s.id}>
+                        {label}
+                      </option>
+                    );
+                  })}
+              </Select>
+            ) : (
+              <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                No previous steps available. Replay steps must be added after other steps.
+              </div>
+            )}
+          </div>
         </div>
       )}
 
