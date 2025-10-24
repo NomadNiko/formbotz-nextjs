@@ -190,7 +190,7 @@ Or use **MongoDB Atlas** (cloud) instead.
 #### Clone Repository
 ```bash
 cd /var/www
-git clone https://github.com/yourusername/formbotz-nextjs.git
+git clone https://github.com/NomadNiko/formbotz-nextjs.git
 cd formbotz-nextjs
 ```
 

@@ -181,11 +181,11 @@ Complete REST API documentation:
 
 ### Documentation Not Clear?
 - 📧 Email: support@formbotz.com
-- 🐛 Report issue: [GitHub Issues](https://github.com/yourusername/formbotz-nextjs/issues)
+- 🐛 Report issue: [GitHub Issues](https://github.com/NomadNiko/formbotz-nextjs/issues)
 - 💬 Suggest improvement: Open a PR
 
 ### Found a Bug?
-1. Check [GitHub Issues](https://github.com/yourusername/formbotz-nextjs/issues)
+1. Check [GitHub Issues](https://github.com/NomadNiko/formbotz-nextjs/issues)
 2. Search for similar issues
 3. Open new issue with:
    - Steps to reproduce
@@ -226,4 +226,4 @@ Documentation is licensed under [MIT License](../LICENSE) - same as the main pro
 
 ---
 
-**Need something not covered here?** [Open an issue](https://github.com/yourusername/formbotz-nextjs/issues) and we'll add it!
+**Need something not covered here?** [Open an issue](https://github.com/NomadNiko/formbotz-nextjs/issues) and we'll add it!

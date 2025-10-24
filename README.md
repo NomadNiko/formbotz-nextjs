@@ -32,7 +32,7 @@ Transform traditional forms into engaging conversational experiences. FormBotz m
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/formbotz-nextjs.git
+git clone https://github.com/NomadNiko/formbotz-nextjs.git
 cd formbotz-nextjs
 
 # Install dependencies
@@ -233,7 +233,7 @@ MIT License - Free to use for personal and commercial projects.
 ## 💬 Support
 
 - 📧 **Email:** support@formbotz.com
-- 🐛 **Issues:** [GitHub Issues](https://github.com/yourusername/formbotz-nextjs/issues)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/NomadNiko/formbotz-nextjs/issues)
 - 📖 **Docs:** [Documentation](./docs/)
 - 💼 **Enterprise:** Contact for custom solutions
 
