@@ -2,13 +2,16 @@
 
 import { Label, TextInput, Checkbox, Radio } from 'flowbite-react';
 import { FormSettings as IFormSettings, TypingDelay } from '@/types';
+import FormActionSelector from './FormActionSelector';
 
 interface FormSettingsProps {
   settings: IFormSettings;
+  formActions?: string[]; // Array of selected form action IDs
   onUpdate: (settings: IFormSettings) => void;
+  onActionsUpdate?: (actionIds: string[]) => void;
 }
 
-export default function FormSettings({ settings, onUpdate }: FormSettingsProps) {
+export default function FormSettings({ settings, formActions = [], onUpdate, onActionsUpdate }: FormSettingsProps) {
   const handleUpdate = (updates: Partial<IFormSettings>) => {
     onUpdate({ ...settings, ...updates });
   };
@@ -151,6 +154,21 @@ export default function FormSettings({ settings, onUpdate }: FormSettingsProps) 
           <Label htmlFor="emailNotifications">Email me when form is completed</Label>
         </div>
       </div>
+
+      {onActionsUpdate && (
+        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+          <h4 className="mb-2 font-semibold text-gray-900 dark:text-white">
+            Form Actions
+          </h4>
+          <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+            Automatically trigger actions when this form is completed
+          </p>
+          <FormActionSelector
+            selectedActionIds={formActions}
+            onUpdate={onActionsUpdate}
+          />
+        </div>
+      )}
     </div>
   );
 }

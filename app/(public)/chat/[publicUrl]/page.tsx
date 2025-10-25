@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Progress, Spinner } from 'flowbite-react';
 import { HiArrowRight } from 'react-icons/hi';
@@ -109,14 +109,12 @@ export default function ChatPage() {
 
     // Check if this is a REPLAY step
     let stepToDisplay = step;
-    let isReplay = false;
 
     if (step.type === StepType.REPLAY && step.replayTarget && form) {
       // Find the target step by ID
       const targetStep = form.steps.find(s => s.id === step.replayTarget);
       if (targetStep) {
         stepToDisplay = targetStep;
-        isReplay = true;
         setReplayContext({ replayStepId: step.id, targetStep });
       }
     } else {

@@ -61,6 +61,17 @@ export enum LogicalOperator {
   OR = 'OR',
 }
 
+export enum FormActionType {
+  EMAIL = 'email',
+  API = 'api',
+}
+
+export enum HttpMethod {
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+}
+
 // ==================== STEP COMPONENTS ====================
 
 export interface MediaItem {
@@ -140,6 +151,31 @@ export interface TrackingConfig {
   analyticsLabel?: string;
 }
 
+// ==================== FORM ACTION TYPES ====================
+
+export interface EmailActionConfig {
+  recipients: string[]; // Array of email addresses
+}
+
+export interface ApiActionConfig {
+  targetUrl: string;
+  method: HttpMethod;
+  headers: Record<string, string>; // User-configurable headers (e.g., API keys)
+}
+
+export type FormActionConfig = EmailActionConfig | ApiActionConfig;
+
+export interface FormAction {
+  _id?: string;
+  clientId: string;
+  name: string;
+  description?: string;
+  type: FormActionType;
+  config: FormActionConfig;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // ==================== MAIN TYPES ====================
 
 export interface Step {
@@ -201,6 +237,7 @@ export interface Form {
   status: FormStatus;
   publicUrl: string;
   settings: FormSettings;
+  formActions?: string[]; // Array of FormAction IDs
   createdAt: Date;
   updatedAt: Date;
 

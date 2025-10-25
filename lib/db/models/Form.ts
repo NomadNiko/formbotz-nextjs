@@ -255,6 +255,10 @@ const FormSchema = new Schema<FormDocument>(
       type: FormSettingsSchema,
       default: {},
     },
+    formActions: {
+      type: [String],
+      default: [],
+    },
     stats: {
       type: StatsSchema,
       default: {},

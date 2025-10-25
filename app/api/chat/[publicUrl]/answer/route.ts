@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
-import { Form, Submission, User } from '@/lib/db/models';
+import { Form, Submission, User, FormAction } from '@/lib/db/models';
 import { getNextStep } from '@/lib/utils/conditionalLogic';
 import { validateInput } from '@/lib/utils/validation';
 import { sendSubmissionNotification } from '@/lib/utils/email';
+import { executeFormActions } from '@/lib/utils/formActions';
 import { formatByDataType } from '@/lib/utils/formatting';
 import { format } from 'date-fns';
-import { SubmissionStatus } from '@/types';
+import { SubmissionStatus, FormAction as IFormAction } from '@/types';
 
 // POST /api/chat/[publicUrl]/answer - Submit an answer
 export async function POST(
@@ -163,7 +164,65 @@ export async function POST(
       await submission.complete();
       await form.incrementCompletions();
 
-      // Send email notification if enabled
+      // Execute form actions asynchronously (fire and forget)
+      console.log('[AnswerRoute] Checking for form actions', {
+        hasFormActions: !!form.formActions,
+        formActionsLength: form.formActions?.length || 0,
+        formActionIds: form.formActions
+      });
+
+      if (form.formActions && form.formActions.length > 0) {
+        try {
+          console.log('[AnswerRoute] Fetching form actions from database', {
+            actionIds: form.formActions
+          });
+
+          const actions = await FormAction.find({
+            _id: { $in: form.formActions }
+          }).lean();
+
+          console.log('[AnswerRoute] Form actions fetched from database', {
+            expected: form.formActions.length,
+            found: actions.length,
+            actions: actions.map(a => ({
+              id: a._id,
+              name: a.name,
+              type: a.type,
+              hasConfig: !!a.config,
+              configKeys: a.config ? Object.keys(a.config) : []
+            }))
+          });
+
+          if (actions.length > 0) {
+            console.log('[AnswerRoute] Starting form actions execution', {
+              submissionId: String(submission._id),
+              formName: form.name,
+              dataKeys: Object.keys(collectedData)
+            });
+
+            // Execute actions asynchronously without awaiting
+            executeFormActions(actions as unknown as IFormAction[], {
+              formName: form.name,
+              submissionId: String(submission._id),
+              data: collectedData,
+              submittedAt: format(new Date(), 'MMM d, yyyy HH:mm:ss'),
+            }).catch((error) => {
+              console.error('[AnswerRoute] Error executing form actions:', error);
+            });
+          } else {
+            console.warn('[AnswerRoute] No form actions found in database despite form.formActions having IDs', {
+              formActionIds: form.formActions
+            });
+          }
+        } catch (actionError) {
+          // Log but don't fail the submission if action execution fails
+          console.error('[AnswerRoute] Failed to fetch/execute form actions:', actionError);
+        }
+      } else {
+        console.log('[AnswerRoute] No form actions configured for this form');
+      }
+
+      // Send email notification if enabled (legacy support)
       if (form.settings?.emailNotifications) {
         try {
           // Get form owner's email

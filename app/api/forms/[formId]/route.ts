@@ -51,7 +51,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, description, steps, settings, status } = body;
+    const { name, description, steps, settings, status, formActions } = body;
 
     await connectDB();
 
@@ -71,6 +71,7 @@ export async function PATCH(
     if (steps !== undefined) form.steps = steps;
     if (settings !== undefined) form.settings = { ...form.settings, ...settings };
     if (status !== undefined) form.status = status;
+    if (formActions !== undefined) form.formActions = formActions;
 
     await form.save();
 

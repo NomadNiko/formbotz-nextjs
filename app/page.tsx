@@ -21,8 +21,11 @@ export default async function Home() {
           Create Conversational Forms That Feel Like Chat
         </p>
         <p className="mb-12 text-lg text-gray-600 dark:text-gray-400">
-          Build engaging forms that guide users through questions one at a time,
-          making data collection feel natural and human.
+          Build engaging forms that guide users through questions one at a time, making data collection feel natural and human.
+          FormBotz transforms traditional forms into conversational experiences that users actually enjoy completing.
+          With powerful conditional logic, variable interpolation, and automated actions, you can create intelligent forms
+          that adapt to each user while automating your workflows. Whether you need simple contact forms or complex
+          multi-step surveys, FormBotz makes it easy to build, deploy, and manage conversational forms that drive results.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
@@ -38,7 +41,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
             <div className="mb-4 text-4xl">💬</div>
             <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
@@ -60,12 +63,42 @@ export default async function Home() {
           </div>
 
           <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+            <div className="mb-4 text-4xl">⚡</div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+              Automated Actions
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Trigger email notifications and API webhooks when forms are completed
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+            <div className="mb-4 text-4xl">🔤</div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+              Variable Interpolation
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Personalize messages by referencing previously collected data
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
             <div className="mb-4 text-4xl">📊</div>
             <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Easy Data Export
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
               View submissions in a dashboard and export to CSV with one click
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+            <div className="mb-4 text-4xl">✨</div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+              Beautiful Interface
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Polished chat experience with typing indicators and smooth animations
             </p>
           </div>
         </div>

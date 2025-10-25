@@ -39,7 +39,11 @@
       "Bash(timeout 60 pnpm build:*)",
       "Bash(bun run:*)",
       "mcp__playwright__browser_network_requests",
-      "Bash(timeout 120 npm run build:*)"
+      "Bash(timeout 120 npm run build:*)",
+      "Bash(pm2 restart:*)",
+      "Bash(pm2 logs:*)",
+      "Bash(pm2 stop:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

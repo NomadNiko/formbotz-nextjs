@@ -13,6 +13,7 @@ import {
   HiChevronLeft,
   HiChevronRight,
   HiMenu,
+  HiLightningBolt,
 } from 'react-icons/hi';
 
 export default function DashboardNav() {
@@ -54,6 +55,7 @@ export default function DashboardNav() {
     { href: '/dashboard', icon: HiChartPie, label: 'Dashboard' },
     { href: '/dashboard/forms', icon: HiViewBoards, label: 'My Forms' },
     { href: '/dashboard/forms/new', icon: HiPlus, label: 'Create Form' },
+    { href: '/dashboard/actions', icon: HiLightningBolt, label: 'Actions' },
   ];
 
   return (

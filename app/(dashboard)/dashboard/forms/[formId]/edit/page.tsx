@@ -115,6 +115,7 @@ export default function FormEditorPage() {
           description: form.description,
           steps: fixedSteps,
           settings: form.settings,
+          formActions: form.formActions || [],
         }),
       });
 
@@ -493,7 +494,9 @@ export default function FormEditorPage() {
                 <div className="flex-1 overflow-y-auto">
                   <FormSettings
                     settings={form.settings}
+                    formActions={form.formActions}
                     onUpdate={(settings) => setForm({ ...form, settings })}
+                    onActionsUpdate={(formActions) => setForm({ ...form, formActions })}
                   />
 
                   <div className="mt-6 border-t pt-6 dark:border-gray-700">
