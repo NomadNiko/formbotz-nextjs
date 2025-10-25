@@ -21,6 +21,7 @@ A conversational form builder that presents forms as chat interfaces. Create dyn
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ or Bun 1.0+
 - MongoDB
 
@@ -35,6 +36,7 @@ npm install
 ### Configuration
 
 Create `.env`:
+
 ```env
 MONGODB_URI=mongodb://localhost:27017/formbotz
 NEXTAUTH_SECRET=<generate with: openssl rand -base64 32>
@@ -100,13 +102,10 @@ npm run format       # Format with Prettier
 
 ## Deployment
 
-### Vercel (Recommended)
-1. Connect GitHub repository to Vercel
-2. Add environment variables
-3. Deploy
-
 ### Self-Hosted
+
 See [Deployment Guide](./docs/deployment.md) for:
+
 - VPS setup with Nginx and PM2
 - SSL configuration
 - Zero-downtime maintenance mode
@@ -117,12 +116,14 @@ See [Deployment Guide](./docs/deployment.md) for:
 ## Recent Updates
 
 **v1.1.0**
+
 - Replay steps for re-collecting answers
 - Variable validation warnings
 - Maintenance mode for deployments
 - Mobile UI improvements
 
 **v1.0.0**
+
 - Initial release with form builder
 - Conditional logic and branching
 - Submission management
