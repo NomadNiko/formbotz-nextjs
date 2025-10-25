@@ -1,31 +1,30 @@
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from 'flowbite-react';
-import { getCurrentUser } from '@/lib/auth/session';
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Button } from "flowbite-react";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export default async function Home() {
   const user = await getCurrentUser();
 
   // Redirect to dashboard if authenticated
   if (user) {
-    redirect('/dashboard');
+    redirect("/dashboard");
   }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-24 dark:from-gray-900 dark:to-gray-800">
       <div className="mx-auto max-w-4xl text-center">
-        <h1 className="mb-6 text-5xl font-bold text-gray-900 dark:text-white md:text-6xl">
+        <h1 className="mb-6 text-5xl font-bold text-gray-900 md:text-6xl dark:text-white">
           FormBotz
         </h1>
-        <p className="mb-4 text-2xl font-light text-gray-700 dark:text-gray-300 md:text-3xl">
+        <p className="mb-4 text-2xl font-light text-gray-700 md:text-3xl dark:text-gray-300">
           Create Conversational Forms That Feel Like Chat
         </p>
         <p className="mb-12 text-lg text-gray-600 dark:text-gray-400">
-          Build engaging forms that guide users through questions one at a time, making data collection feel natural and human.
-          FormBotz transforms traditional forms into conversational experiences that users actually enjoy completing.
-          With powerful conditional logic, variable interpolation, and automated actions, you can create intelligent forms
-          that adapt to each user while automating your workflows. Whether you need simple contact forms or complex
-          multi-step surveys, FormBotz makes it easy to build, deploy, and manage conversational forms that drive results.
+          Collect data through engaging, one-at-a-time conversations. FormBotz
+          turns traditional forms into conversational experiences that users
+          actually complete—with conditional logic, variable interpolation, and
+          automated actions that adapt to each response.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
@@ -48,7 +47,8 @@ export default async function Home() {
               Conversational Flow
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Present questions one at a time in a chat-like interface for better engagement
+              Present questions one at a time in a chat-like interface for
+              better engagement
             </p>
           </div>
 
@@ -68,7 +68,8 @@ export default async function Home() {
               Automated Actions
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Trigger email notifications and API webhooks when forms are completed
+              Trigger email notifications and API webhooks when forms are
+              completed
             </p>
           </div>
 
@@ -98,7 +99,8 @@ export default async function Home() {
               Beautiful Interface
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Polished chat experience with typing indicators and smooth animations
+              Polished chat experience with typing indicators and smooth
+              animations
             </p>
           </div>
         </div>
