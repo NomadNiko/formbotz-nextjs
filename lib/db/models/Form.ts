@@ -202,6 +202,8 @@ const FormSettingsSchema = new Schema(
     enableProgressBar: { type: Boolean, default: true },
     allowBackNavigation: { type: Boolean, default: true },
     emailNotifications: { type: Boolean, default: true },
+    passwordProtected: { type: Boolean, default: false },
+    password: String,
   },
   { _id: false }
 );

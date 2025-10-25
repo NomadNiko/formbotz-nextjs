@@ -153,7 +153,36 @@ export default function FormSettings({ settings, formActions = [], onUpdate, onA
           />
           <Label htmlFor="emailNotifications">Email me when form is completed</Label>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="passwordProtected"
+            checked={settings.passwordProtected || false}
+            onChange={(e) =>
+              handleUpdate({ passwordProtected: e.target.checked })
+            }
+          />
+          <Label htmlFor="passwordProtected">Password protect this form</Label>
+        </div>
       </div>
+
+      {settings.passwordProtected && (
+        <div className="mt-4">
+          <div className="mb-2 block">
+            <Label htmlFor="formPassword">Form Password</Label>
+          </div>
+          <TextInput
+            id="formPassword"
+            type="text"
+            placeholder="Enter password for form access"
+            value={settings.password || ''}
+            onChange={(e) => handleUpdate({ password: e.target.value })}
+          />
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Users will need to enter this password before accessing the form
+          </p>
+        </div>
+      )}
 
       {onActionsUpdate && (
         <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">

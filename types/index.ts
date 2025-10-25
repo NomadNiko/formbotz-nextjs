@@ -226,6 +226,8 @@ export interface FormSettings {
   enableProgressBar?: boolean;
   allowBackNavigation?: boolean;
   emailNotifications?: boolean;
+  passwordProtected?: boolean;
+  password?: string;
 }
 
 export interface Form {

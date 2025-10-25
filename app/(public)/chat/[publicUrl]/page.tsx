@@ -40,8 +40,17 @@ export default function ChatPage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [showInput, setShowInput] = useState(false);
   const [replayContext, setReplayContext] = useState<{ replayStepId: string; targetStep: Step } | null>(null);
+  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [enteredPassword, setEnteredPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
+    // Check if password was previously verified in this session
+    const verified = sessionStorage.getItem(`form_${publicUrl}_verified`);
+    if (verified === 'true') {
+      setIsPasswordVerified(true);
+    }
     startSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicUrl]);
@@ -70,8 +79,17 @@ export default function ChatPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSessionId(data.sessionId);
         setForm(data.form);
+
+        // Check if form is password protected (check sessionStorage for immediate verification)
+        const verified = sessionStorage.getItem(`form_${publicUrl}_verified`) === 'true';
+        if (data.form.settings?.passwordProtected && !verified) {
+          setIsPasswordProtected(true);
+          setIsLoading(false);
+          return;
+        }
+
+        setSessionId(data.sessionId);
         setCollectedData(data.collectedData || {});
         setCurrentStepIndex(data.currentStepIndex || 0);
 
@@ -87,6 +105,26 @@ export default function ChatPage() {
       setError('Failed to connect to form');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+
+    if (!form || !enteredPassword) {
+      setPasswordError('Please enter a password');
+      return;
+    }
+
+    if (enteredPassword === form.settings?.password) {
+      setIsPasswordVerified(true);
+      sessionStorage.setItem(`form_${publicUrl}_verified`, 'true');
+      setIsLoading(true);
+      startSession(); // Restart session now that password is verified
+    } else {
+      setPasswordError('Incorrect password. Please try again.');
+      setEnteredPassword('');
     }
   };
 
@@ -291,6 +329,58 @@ export default function ChatPage() {
   const brandColor = form?.settings?.brandColor || '#3b82f6';
   const useDarkText = form?.settings?.useDarkText || false;
   const backgroundImageUrl = form?.settings?.backgroundImageUrl;
+
+  // Password protection screen
+  if (isPasswordProtected && !isPasswordVerified) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950 p-4">
+        <div className="relative w-full sm:max-w-[480px] sm:rounded-2xl sm:shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-center bg-gray-50 p-8 dark:bg-gray-900">
+            <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {form?.name || 'Conversational Form'}
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                This form is password protected. Please enter the password to continue.
+              </p>
+
+              <form onSubmit={handlePasswordSubmit}>
+                <div className="mb-4">
+                  <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                    placeholder="Enter password"
+                    value={enteredPassword}
+                    onChange={(e) => setEnteredPassword(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                {passwordError && (
+                  <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                    {passwordError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full rounded-lg px-5 py-2.5 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  Continue
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950">
