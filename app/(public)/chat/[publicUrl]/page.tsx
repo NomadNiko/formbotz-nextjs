@@ -7,6 +7,7 @@ import { HiArrowRight } from 'react-icons/hi';
 import { Step, StepType, Form as IForm, TypingDelay, DataType } from '@/types';
 import { interpolateVariables } from '@/lib/utils/interpolation';
 import { parseMessageLinks } from '@/lib/utils/linkParser';
+import { formatProjectName } from '@/lib/utils/formatting';
 import TypingIndicator from '@/components/chat/TypingIndicator';
 import { countryCodes } from '@/lib/data/countryCodes';
 
@@ -294,6 +295,17 @@ export default function ChatPage() {
     // The input is already in view from the scroll effect
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Apply real-time formatting for PROJECT_NAME
+    if (stepForInput?.input?.dataType === DataType.PROJECT_NAME) {
+      setUserInput(formatProjectName(value, true)); // true = isRealtime, keep leading/trailing hyphens
+    } else {
+      setUserInput(value);
+    }
+  };
+
   const progress = form && form.steps ? Math.round(((currentStepIndex + 1) / form.steps.length) * 100) : 0;
 
   // Use target step for input if in replay context
@@ -540,7 +552,7 @@ export default function ChatPage() {
                       className="min-w-0 flex-1 rounded-lg border-gray-300 px-3 py-2.5 text-base focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder={stepForInput.input.placeholder || 'Type your answer...'}
                       value={userInput}
-                      onChange={(e) => setUserInput(e.target.value)}
+                      onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
                       onFocus={handleInputFocus}
                       disabled={isSubmitting}

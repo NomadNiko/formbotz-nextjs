@@ -154,6 +154,7 @@ export function getDataTypeLabel(type: DataType): string {
     [DataType.ADDRESS]: 'Address',
     [DataType.EMAIL]: 'Email',
     [DataType.NUMBER]: 'Number',
+    [DataType.PROJECT_NAME]: 'Project Name',
     [DataType.CUSTOM_ENUM]: 'Custom Options',
     [DataType.CUSTOM_DATE]: 'Custom Date',
   };

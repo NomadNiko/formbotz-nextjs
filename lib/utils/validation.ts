@@ -129,6 +129,40 @@ export function validateCountryCode(code: string): { valid: boolean; error?: str
 }
 
 /**
+ * Validate project name (lowercase, letters, numbers, hyphens only, no spaces)
+ */
+export function validateProjectName(projectName: string): { valid: boolean; error?: string } {
+  if (!projectName || typeof projectName !== 'string') {
+    return { valid: false, error: "Please enter a project name." };
+  }
+
+  const trimmedName = projectName.trim();
+
+  if (trimmedName.length === 0) {
+    return { valid: false, error: "Project name cannot be empty." };
+  }
+
+  // Only lowercase letters, numbers, and hyphens allowed
+  const projectNameRegex = /^[a-z0-9-]+$/;
+
+  if (!projectNameRegex.test(trimmedName)) {
+    return { valid: false, error: "Project name must be lowercase letters, numbers, and hyphens only (no spaces)." };
+  }
+
+  // Cannot start or end with hyphen
+  if (trimmedName.startsWith('-') || trimmedName.endsWith('-')) {
+    return { valid: false, error: "Project name cannot start or end with a hyphen." };
+  }
+
+  // Minimum length
+  if (trimmedName.length < 2) {
+    return { valid: false, error: "Project name must be at least 2 characters long." };
+  }
+
+  return { valid: true };
+}
+
+/**
  * Main validation function that routes to specific validators
  */
 export function validateInput(
@@ -148,6 +182,9 @@ export function validateInput(
 
     case DataType.NUMBER:
       return validateNumber(value);
+
+    case DataType.PROJECT_NAME:
+      return validateProjectName(String(value));
 
     case DataType.FREETEXT:
     case DataType.NAME:

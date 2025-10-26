@@ -18,6 +18,7 @@ export enum DataType {
   ADDRESS = 'address',
   EMAIL = 'email',
   NUMBER = 'number',
+  PROJECT_NAME = 'projectName',
   CUSTOM_ENUM = 'customEnum',
   CUSTOM_DATE = 'customDate',
 }
