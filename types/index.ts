@@ -246,6 +246,7 @@ export interface Form {
   _id?: string;
   clientId: string;
   name: string;
+  displayName?: string;
   description?: string;
   steps: Step[];
   status: FormStatus;

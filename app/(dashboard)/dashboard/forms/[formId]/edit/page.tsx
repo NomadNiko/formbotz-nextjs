@@ -56,6 +56,7 @@ export default function FormEditorPage() {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [newFormName, setNewFormName] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'form' | 'widget'>('form');
 
   useEffect(() => {
     fetchForm();
@@ -131,6 +132,7 @@ export default function FormEditorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name,
+          displayName: form.displayName,
           description: form.description,
           steps: fixedSteps,
           settings: form.settings,
@@ -337,7 +339,7 @@ export default function FormEditorPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {form.name}
+                {form.displayName || form.name}
               </h1>
               <button
                 onClick={handleOpenRenameModal}
@@ -361,18 +363,22 @@ export default function FormEditorPage() {
         </div>
 
         <div className="flex gap-2">
-          <Link href={`/chat/${form.publicUrl}`} target="_blank">
-            <Button color="gray" size="sm" disabled={!form.publicUrl}>
-              <HiEye className="mr-2 h-4 w-4" />
-              Preview
-            </Button>
-          </Link>
-          <Link href={`/dashboard/forms/${formId}/submissions`}>
-            <Button color="gray" size="sm">
-              <HiClipboardList className="mr-2 h-4 w-4" />
-              Submissions
-            </Button>
-          </Link>
+          {form.status === 'published' && (
+            <Link href={`/chat/${form.publicUrl}`} target="_blank">
+              <Button color="gray" size="sm" disabled={!form.publicUrl}>
+                <HiEye className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+            </Link>
+          )}
+          {form.status === 'published' && (
+            <Link href={`/dashboard/forms/${formId}/submissions`}>
+              <Button color="gray" size="sm">
+                <HiClipboardList className="mr-2 h-4 w-4" />
+                Submissions
+              </Button>
+            </Link>
+          )}
           <Button
             color="gray"
             size="sm"
@@ -402,7 +408,7 @@ export default function FormEditorPage() {
       )}
 
       {/* Main Builder Layout */}
-      <div className="flex flex-1 gap-4 overflow-hidden">
+      <div className="flex flex-1 gap-4">
         {/* Left: Step List */}
         <div
           className={`flex-shrink-0 transition-all duration-300 ease-in-out ${
@@ -423,7 +429,7 @@ export default function FormEditorPage() {
             ) : (
               <div className="flex h-full flex-col">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Steps</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Steps</h3>
                   <div className="flex gap-1">
                     <div className="relative">
                       <Button
@@ -500,7 +506,7 @@ export default function FormEditorPage() {
         </div>
 
         {/* Center: Step Editor */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1">
           <Card className="h-full overflow-y-auto">
             {selectedStep ? (
               <StepEditor
@@ -523,8 +529,8 @@ export default function FormEditorPage() {
 
         {/* Right: Settings/Preview */}
         <div
-          className={`flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${
-            isRightSidebarCollapsed ? 'w-12' : 'w-80'
+          className={`flex-shrink-0 transition-all duration-300 ease-in-out ${
+            isRightSidebarCollapsed ? 'w-12' : 'w-[480px]'
           }`}
         >
           <Card className="h-full flex flex-col relative">
@@ -541,7 +547,7 @@ export default function FormEditorPage() {
             ) : (
               <>
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Settings</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h3>
                   <button
                     onClick={() => setIsRightSidebarCollapsed(true)}
                     className="rounded p-1 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
@@ -550,68 +556,126 @@ export default function FormEditorPage() {
                     <HiChevronRight className="h-4 w-4" />
                   </button>
                 </div>
+
+                {/* Tab Buttons */}
+                <div className="mb-4 flex gap-2 border-b border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setSettingsTab('form')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                      settingsTab === 'form'
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    Form Settings
+                  </button>
+                  <button
+                    onClick={() => setSettingsTab('widget')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                      settingsTab === 'widget'
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    Widget Settings
+                  </button>
+                </div>
+
                 <div className="flex-1 overflow-y-auto">
-                  <FormSettings
-                    settings={form.settings}
-                    formActions={form.formActions}
-                    onUpdate={(settings) => setForm({ ...form, settings })}
-                    onActionsUpdate={(formActions) => setForm({ ...form, formActions })}
-                  />
-
-                  {/* Widget Settings Section */}
-                  <div className="mt-6 border-t pt-6 dark:border-gray-700">
-                    <WidgetSettings
-                      settings={form.settings.widgetSettings || {}}
-                      brandColor={form.settings.brandColor}
-                      onUpdate={(widgetSettings) =>
-                        setForm({
-                          ...form,
-                          settings: {
-                            ...form.settings,
-                            widgetSettings: {
-                              ...form.settings.widgetSettings,
-                              ...widgetSettings,
-                            },
-                          },
-                        })
-                      }
-                    />
-                  </div>
-
-                  {/* Embed Code Section */}
-                  <div className="mt-6 border-t pt-6 dark:border-gray-700">
-                    <EmbedCodeDisplay publicUrl={form.publicUrl} />
-                  </div>
-
-                  <div className="mt-6 border-t pt-6 dark:border-gray-700">
-                    <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
-                      Form Info
-                    </h4>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Public URL
-                        </p>
-                        <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
-                          /chat/{form.publicUrl}
-                        </code>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Stats
-                        </p>
-                        <div className="mt-2 space-y-1 text-sm">
-                          <p>Views: {form.stats?.views || 0}</p>
-                          <p>Starts: {form.stats?.starts || 0}</p>
-                          <p>Completions: {form.stats?.completions || 0}</p>
-                          <p>
-                            Rate:{' '}
-                            {form.stats?.completionRate?.toFixed(1) || 0}%
-                          </p>
+                  {/* Form Settings Tab */}
+                  {settingsTab === 'form' && (
+                    <>
+                      {/* Display Name Section */}
+                      <div className="mb-6 space-y-4">
+                        <div>
+                          <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
+                            Display Information
+                          </h3>
+                          <div>
+                            <div className="mb-2 block">
+                              <Label htmlFor="displayName">Display Name (Optional)</Label>
+                            </div>
+                            <TextInput
+                              id="displayName"
+                              type="text"
+                              placeholder={form.name}
+                              value={form.displayName || ''}
+                              onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+                            />
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                              If set, this name will be shown to users instead of &quot;{form.name}&quot;
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+
+                      <div className="border-t pt-6 dark:border-gray-700">
+                        <FormSettings
+                          settings={form.settings}
+                          formActions={form.formActions}
+                          onUpdate={(settings) => setForm({ ...form, settings })}
+                          onActionsUpdate={(formActions) => setForm({ ...form, formActions })}
+                        />
+                      </div>
+
+                      <div className="mt-6 border-t pt-6 dark:border-gray-700">
+                        <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+                          Form Info
+                        </h4>
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Public URL
+                            </p>
+                            <code className="mt-1 block rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                              /chat/{form.publicUrl}
+                            </code>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Stats
+                            </p>
+                            <div className="mt-2 space-y-1 text-sm">
+                              <p>Views: {form.stats?.views || 0}</p>
+                              <p>Starts: {form.stats?.starts || 0}</p>
+                              <p>Completions: {form.stats?.completions || 0}</p>
+                              <p>
+                                Rate:{' '}
+                                {form.stats?.completionRate?.toFixed(1) || 0}%
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Widget Settings Tab */}
+                  {settingsTab === 'widget' && (
+                    <>
+                      <WidgetSettings
+                        settings={form.settings.widgetSettings || {}}
+                        brandColor={form.settings.brandColor}
+                        onUpdate={(widgetSettings) =>
+                          setForm({
+                            ...form,
+                            settings: {
+                              ...form.settings,
+                              widgetSettings: {
+                                ...form.settings.widgetSettings,
+                                ...widgetSettings,
+                              },
+                            },
+                          })
+                        }
+                      />
+
+                      {/* Embed Code Section */}
+                      <div className="mt-6 border-t pt-6 dark:border-gray-700">
+                        <EmbedCodeDisplay publicUrl={form.publicUrl} />
+                      </div>
+                    </>
+                  )}
                 </div>
               </>
             )}

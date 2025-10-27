@@ -360,7 +360,7 @@ export default function ChatInterface({ publicUrl, mode, skipPasswordProtection 
         <div className="flex items-center justify-center bg-gray-50 p-8 dark:bg-gray-900 h-full">
           <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {form?.name || 'Conversational Form'}
+              {form?.displayName || form?.name || 'Conversational Form'}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               This form is password protected. Please enter the password to continue.
@@ -423,7 +423,7 @@ export default function ChatInterface({ publicUrl, mode, skipPasswordProtection 
         <div className="flex-shrink-0 border-b bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-              {form?.name || 'Conversational Form'}
+              {form?.displayName || form?.name || 'Conversational Form'}
             </h1>
             {mode === 'widget' && onClose && (
               <button

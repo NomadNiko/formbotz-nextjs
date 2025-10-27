@@ -3,6 +3,7 @@
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import {
   HiChartPie,
@@ -65,32 +66,58 @@ export default function DashboardNav() {
     >
       <div className="flex h-full flex-col justify-between p-2">
         <div className="space-y-4">
-          {/* Header with integrated toggle */}
-          <div className={`flex items-center px-2 py-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-            {!isCollapsed && (
-              <div className="flex-1">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  FormBotz
-                </h1>
-                {session?.user?.name && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                    {session.user.name}
-                  </p>
-                )}
+          {/* Header section */}
+          {!isCollapsed ? (
+            <div className="flex items-center justify-between gap-2 px-2 py-2">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Image
+                  src="/formbots-face.svg"
+                  alt="FormBotz Logo"
+                  width={40}
+                  height={40}
+                  className="flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                    FormBotz
+                  </h1>
+                  {session?.user?.name && (
+                    <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                      {session.user.name}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
-            <button
-              onClick={toggleCollapse}
-              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
-              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {isCollapsed ? (
-                <HiChevronRight className="h-5 w-5" />
-              ) : (
+              <button
+                onClick={toggleCollapse}
+                className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 flex-shrink-0"
+                title="Collapse sidebar"
+              >
                 <HiChevronLeft className="h-5 w-5" />
-              )}
-            </button>
-          </div>
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-center px-2 py-2">
+                <button
+                  onClick={toggleCollapse}
+                  className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                  title="Expand sidebar"
+                >
+                  <HiChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex justify-center px-2">
+                <Image
+                  src="/formbots-face.svg"
+                  alt="FormBotz Logo"
+                  width={32}
+                  height={32}
+                  className="flex-shrink-0"
+                />
+              </div>
+            </>
+          )}
 
           {/* Navigation Links */}
           <nav className="space-y-1">

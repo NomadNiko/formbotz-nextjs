@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button, Card, Label, TextInput, Alert } from 'flowbite-react';
-import { HiMail, HiLockClosed, HiInformationCircle } from 'react-icons/hi';
+import { HiMail, HiLockClosed, HiInformationCircle, HiEye, HiEyeOff } from 'react-icons/hi';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,15 +79,29 @@ export default function LoginPage() {
               <div className="mb-2 block">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <TextInput
-                id="password"
-                type="password"
-                icon={HiLockClosed}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <TextInput
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  icon={HiLockClosed}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <HiEyeOff className="h-5 w-5" />
+                  ) : (
+                    <HiEye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button type="submit" disabled={isLoading}>

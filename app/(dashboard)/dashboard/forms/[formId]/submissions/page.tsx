@@ -196,7 +196,7 @@ export default function SubmissionsPage() {
                       {submission.status === 'completed' ? (
                         <Badge color="success">Completed</Badge>
                       ) : submission.status === 'in-progress' ? (
-                        <Badge color="warning">In Progress</Badge>
+                        <Badge color="warning">Incomplete</Badge>
                       ) : (
                         <Badge color="gray">Abandoned</Badge>
                       )}
@@ -247,7 +247,7 @@ export default function SubmissionsPage() {
                     {selectedSubmission.status === 'completed' ? (
                       <Badge color="success">Completed</Badge>
                     ) : selectedSubmission.status === 'in-progress' ? (
-                      <Badge color="warning">In Progress</Badge>
+                      <Badge color="warning">Incomplete</Badge>
                     ) : (
                       <Badge color="gray">Abandoned</Badge>
                     )}
@@ -276,7 +276,7 @@ export default function SubmissionsPage() {
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
                     {selectedSubmission.metadata.completedAt
                       ? format(new Date(selectedSubmission.metadata.completedAt), 'MMM d, yyyy HH:mm:ss')
-                      : 'In Progress'}
+                      : 'Incomplete'}
                   </p>
                 </div>
               </div>

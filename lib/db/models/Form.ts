@@ -253,6 +253,10 @@ const FormSchema = new Schema<FormDocument>(
       required: [true, 'Form name is required'],
       trim: true,
     },
+    displayName: {
+      type: String,
+      trim: true,
+    },
     description: {
       type: String,
       trim: true,

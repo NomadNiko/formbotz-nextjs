@@ -129,11 +129,11 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
   return (
     <div className="flex h-full flex-col">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 pb-4 border-b border-gray-200 dark:border-gray-700 mb-6">
         <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
           Edit Step
         </h2>
-        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {getStepTypeLabel(localStep.type)}
           </p>

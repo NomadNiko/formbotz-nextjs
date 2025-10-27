@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/authOptions';
 import connectDB from '@/lib/db/mongodb';
-import { Form } from '@/lib/db/models';
+import { Form, FormAction } from '@/lib/db/models';
 import { v4 as uuidv4 } from 'uuid';
 import { FormStatus } from '@/types';
 
@@ -19,9 +19,39 @@ export async function GET() {
 
     const forms = await Form.find({ clientId: session.user.id })
       .sort({ updatedAt: -1 })
-      .select('-steps'); // Don't return full steps in list view
+      .select('name displayName status stats updatedAt publicUrl formActions steps')
+      .lean(); // Use lean() for better performance
 
-    return NextResponse.json({ forms }, { status: 200 });
+    // Collect all unique formAction IDs
+    const allActionIds = new Set<string>();
+    forms.forEach((form) => {
+      if (form.formActions && Array.isArray(form.formActions)) {
+        form.formActions.forEach((id) => allActionIds.add(id));
+      }
+    });
+
+    // Fetch all FormAction documents
+    const actionMap = new Map();
+    if (allActionIds.size > 0) {
+      const actions = await FormAction.find({ _id: { $in: Array.from(allActionIds) } })
+        .select('_id name type')
+        .lean();
+
+      actions.forEach((action) => {
+        actionMap.set(action._id.toString(), { name: action.name, type: action.type });
+      });
+    }
+
+    // Map action IDs to action objects with names
+    const formsWithActionNames = forms.map((form) => ({
+      ...form,
+      formActions: form.formActions?.map((id) => {
+        const action = actionMap.get(id);
+        return action || id; // Return action object with name or fallback to ID
+      }) || [],
+    }));
+
+    return NextResponse.json({ forms: formsWithActionNames }, { status: 200 });
   } catch (error) {
     console.error('Error fetching forms:', error);
     return NextResponse.json(

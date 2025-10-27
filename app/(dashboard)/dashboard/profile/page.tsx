@@ -28,8 +28,9 @@ export default function ProfilePage() {
   }, [session]);
 
   useEffect(() => {
-    // Detect current theme on mount
-    const isDark = document.documentElement.classList.contains('dark');
+    // Detect current theme on mount from localStorage and DOM
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark' || document.documentElement.classList.contains('dark');
     setIsDarkMode(isDark);
   }, []);
 

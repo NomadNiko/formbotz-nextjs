@@ -49,12 +49,16 @@
       "Bash(curl:*)",
       "Bash(pm2 start:*)",
       "Bash(cat:*)",
-      "Bash(md5sum:*)"
+      "Bash(md5sum:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(sudo chown:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
-      "/var/www/matrix/"
+      "/var/www/matrix/",
+      "/var/www/maintenance/"
     ]
   },
   "spinnerTipsEnabled": false

@@ -26,6 +26,7 @@ export const revalidate = 0;
 interface FormWithStats {
   _id: unknown;
   name: string;
+  displayName?: string;
   status: FormStatus;
   steps: unknown[];
   updatedAt: Date;
@@ -198,7 +199,7 @@ export default async function DashboardPage() {
                 </span>
                 <span className="text-gray-400">•</span>
                 <span className="text-yellow-600 dark:text-yellow-400">
-                  {inProgressSubmissions} active
+                  {inProgressSubmissions} incomplete
                 </span>
               </div>
             </div>
@@ -292,7 +293,7 @@ export default async function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                          {form.name}
+                          {form.displayName || form.name}
                         </h3>
                         {form.status === FormStatus.PUBLISHED ? (
                           <Badge color="success" size="sm">Published</Badge>
@@ -409,7 +410,7 @@ export default async function DashboardPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-gray-900 dark:text-white truncate">
-                            {form?.name || 'Unknown Form'}
+                            {form?.displayName || form?.name || 'Unknown Form'}
                           </p>
                           {isCompleted && (
                             <HiCheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" title="Completed" />
@@ -418,7 +419,7 @@ export default async function DashboardPage() {
                             <HiX className="h-4 w-4 text-red-600 flex-shrink-0" title="Abandoned" />
                           )}
                           {!isCompleted && !isAbandoned && (
-                            <HiClock className="h-4 w-4 text-yellow-600 flex-shrink-0" title="In Progress" />
+                            <HiClock className="h-4 w-4 text-yellow-600 flex-shrink-0" title="Incomplete" />
                           )}
                         </div>
                         <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
@@ -442,7 +443,7 @@ export default async function DashboardPage() {
                         <Badge color="failure" size="xs">Abandoned</Badge>
                       )}
                       {!isCompleted && !isAbandoned && (
-                        <Badge color="warning" size="xs">In Progress</Badge>
+                        <Badge color="warning" size="xs">Incomplete</Badge>
                       )}
                     </div>
                   </div>

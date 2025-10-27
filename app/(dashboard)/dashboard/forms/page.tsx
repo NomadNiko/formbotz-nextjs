@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button, Card, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell } from 'flowbite-react';
-import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink, HiClipboardList, HiDuplicate } from 'react-icons/hi';
+import { Button, Card, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-react';
+import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink, HiClipboardList, HiDuplicate, HiDotsVertical } from 'react-icons/hi';
 import { Form as IForm } from '@/types';
 import { format } from 'date-fns';
 
@@ -146,12 +146,13 @@ export default function FormsListPage() {
           </div>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table hoverable>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
+          <Table hoverable>
               <TableHead>
                 <TableHeadCell>Name</TableHeadCell>
                 <TableHeadCell>Status</TableHeadCell>
+                <TableHeadCell>Steps</TableHeadCell>
+                <TableHeadCell>Form Actions</TableHeadCell>
                 <TableHeadCell>Submissions</TableHeadCell>
                 <TableHeadCell>Completion Rate</TableHeadCell>
                 <TableHeadCell>Last Updated</TableHeadCell>
@@ -164,9 +165,37 @@ export default function FormsListPage() {
                     className="bg-white dark:border-gray-700 dark:bg-gray-800"
                   >
                     <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                      {form.name}
+                      {form.displayName || form.name}
                     </TableCell>
                     <TableCell>{getStatusBadge(form.status)}</TableCell>
+                    <TableCell>
+                      {form.steps?.length || 0}
+                    </TableCell>
+                    <TableCell>
+                      {form.formActions && form.formActions.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {form.formActions.slice(0, 2).map((action: { name?: string } | string, idx) => {
+                            const displayName = typeof action === 'object' && action?.name
+                              ? action.name
+                              : typeof action === 'string'
+                              ? action
+                              : 'Unknown';
+                            return (
+                              <Badge key={idx} color="info" size="sm">
+                                {displayName}
+                              </Badge>
+                            );
+                          })}
+                          {form.formActions.length > 2 && (
+                            <Badge color="gray" size="sm">
+                              +{form.formActions.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 dark:text-gray-500">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {form.stats?.completions || 0} /{' '}
                       {form.stats?.starts || 0}
@@ -180,68 +209,56 @@ export default function FormsListPage() {
                       {format(new Date(form.updatedAt), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="xs"
-                          color="light"
-                          onClick={() =>
-                            router.push(`/dashboard/forms/${form._id}/edit`)
-                          }
-                          title="Edit form"
-                        >
-                          <HiPencil className="h-4 w-4" />
-                        </Button>
-                        {form.status === 'published' && (
-                          <Button
-                            size="xs"
-                            color="light"
-                            onClick={() =>
-                              window.open(`/chat/${form.publicUrl}`, '_blank')
-                            }
-                            title="View live form"
-                          >
-                            <HiExternalLink className="h-4 w-4" />
-                          </Button>
+                      <Dropdown
+                        label=""
+                        dismissOnClick={true}
+                        renderTrigger={() => (
+                          <button className="inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
+                            <HiDotsVertical className="h-5 w-5" />
+                          </button>
                         )}
-                        <Button
-                          size="xs"
-                          color="light"
-                          onClick={() =>
-                            router.push(`/dashboard/forms/${form._id}/submissions`)
-                          }
-                          title="View submissions"
+                      >
+                        <DropdownItem
+                          icon={HiPencil}
+                          onClick={() => router.push(`/dashboard/forms/${form._id}/edit`)}
                         >
-                          <HiClipboardList className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="xs"
-                          color="light"
+                          Edit
+                        </DropdownItem>
+                        {form.status === 'published' && (
+                          <DropdownItem
+                            icon={HiExternalLink}
+                            onClick={() => window.open(`/chat/${form.publicUrl}`, '_blank')}
+                          >
+                            View Live
+                          </DropdownItem>
+                        )}
+                        <DropdownItem
+                          icon={HiClipboardList}
+                          onClick={() => router.push(`/dashboard/forms/${form._id}/submissions`)}
+                        >
+                          Submissions
+                        </DropdownItem>
+                        <DropdownItem
+                          icon={HiDuplicate}
                           onClick={() => handleDuplicate(form._id!)}
                           disabled={duplicatingId === form._id}
-                          title="Duplicate form"
                         >
-                          {duplicatingId === form._id ? (
-                            <Spinner size="sm" />
-                          ) : (
-                            <HiDuplicate className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          size="xs"
-                          color="failure"
+                          {duplicatingId === form._id ? 'Duplicating...' : 'Duplicate'}
+                        </DropdownItem>
+                        <DropdownDivider />
+                        <DropdownItem
+                          icon={HiTrash}
                           onClick={() => handleDelete(form._id!)}
-                          title="Delete form"
                         >
-                          <HiTrash className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          Delete
+                        </DropdownItem>
+                      </Dropdown>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </Card>
+        </div>
       )}
     </div>
   );
