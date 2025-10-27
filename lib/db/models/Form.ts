@@ -186,6 +186,23 @@ const StepSchema = new Schema<Step>(
   { _id: false }
 );
 
+const WidgetSettingsSchema = new Schema(
+  {
+    enabled: { type: Boolean, default: true },
+    position: {
+      type: String,
+      enum: ['bottom-right', 'bottom-left', 'top-right', 'top-left'],
+      default: 'bottom-right'
+    },
+    buttonColor: String,
+    buttonSize: { type: Number, default: 100 },
+    horizontalOffset: { type: Number, default: 20 },
+    verticalOffset: { type: Number, default: 20 },
+    customCSS: String,
+  },
+  { _id: false }
+);
+
 const FormSettingsSchema = new Schema(
   {
     brandColor: String,
@@ -204,6 +221,10 @@ const FormSettingsSchema = new Schema(
     emailNotifications: { type: Boolean, default: true },
     passwordProtected: { type: Boolean, default: false },
     password: String,
+    widgetSettings: {
+      type: WidgetSettingsSchema,
+      default: {},
+    },
   },
   { _id: false }
 );

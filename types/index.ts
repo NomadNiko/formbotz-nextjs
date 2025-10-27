@@ -216,6 +216,16 @@ export enum TypingDelay {
   NORMAL = 'normal'
 }
 
+export interface WidgetSettings {
+  enabled?: boolean;
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  buttonColor?: string;
+  buttonSize?: number;
+  horizontalOffset?: number;
+  verticalOffset?: number;
+  customCSS?: string;
+}
+
 export interface FormSettings {
   brandColor?: string;
   backgroundImageUrl?: string;
@@ -229,6 +239,7 @@ export interface FormSettings {
   emailNotifications?: boolean;
   passwordProtected?: boolean;
   password?: string;
+  widgetSettings?: WidgetSettings;
 }
 
 export interface Form {

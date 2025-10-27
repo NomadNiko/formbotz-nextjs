@@ -12,7 +12,6 @@ import {
   HiPlus,
   HiChevronLeft,
   HiChevronRight,
-  HiMenu,
   HiLightningBolt,
 } from 'react-icons/hi';
 
@@ -48,7 +47,7 @@ export default function DashboardNav() {
   };
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/' });
+    signOut({ callbackUrl: '/login' });
   };
 
   const navItems = [
@@ -66,8 +65,8 @@ export default function DashboardNav() {
     >
       <div className="flex h-full flex-col justify-between p-2">
         <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between px-2 py-2">
+          {/* Header with integrated toggle */}
+          <div className={`flex items-center px-2 py-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
             {!isCollapsed && (
               <div className="flex-1">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -80,15 +79,6 @@ export default function DashboardNav() {
                 )}
               </div>
             )}
-            {isCollapsed && (
-              <div className="mx-auto">
-                <HiMenu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
-              </div>
-            )}
-          </div>
-
-          {/* Toggle Button */}
-          <div className="flex justify-end px-1">
             <button
               onClick={toggleCollapse}
               className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
@@ -104,10 +94,19 @@ export default function DashboardNav() {
 
           {/* Navigation Links */}
           <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-              return (
+            {(() => {
+              // Don't highlight any nav items if we're on Profile page
+              const isProfilePage = pathname === '/dashboard/profile';
+
+              // Find the best matching route (longest match wins)
+              const activeHref = isProfilePage ? null : navItems
+                .filter(item => pathname === item.href || pathname?.startsWith(item.href + '/'))
+                .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
+              return navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.href === activeHref;
+                return (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -122,7 +121,8 @@ export default function DashboardNav() {
                   {!isCollapsed && <span>{item.label}</span>}
                 </Link>
               );
-            })}
+              });
+            })()}
           </nav>
         </div>
 
@@ -130,9 +130,11 @@ export default function DashboardNav() {
         <div className="space-y-1 border-t pt-2 dark:border-gray-700">
           <Link
             href="/dashboard/profile"
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 ${
-              isCollapsed ? 'justify-center' : ''
-            }`}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              pathname === '/dashboard/profile'
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+            } ${isCollapsed ? 'justify-center' : ''}`}
             title={isCollapsed ? 'Profile' : ''}
           >
             <HiUser className="h-5 w-5 flex-shrink-0" />

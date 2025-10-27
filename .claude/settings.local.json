@@ -44,10 +44,18 @@
       "Bash(pm2 logs:*)",
       "Bash(pm2 stop:*)",
       "Bash(npm run build:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(git diff:*)",
+      "Bash(curl:*)",
+      "Bash(pm2 start:*)",
+      "Bash(cat:*)",
+      "Bash(md5sum:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "/var/www/matrix/"
+    ]
   },
   "spinnerTipsEnabled": false
 }

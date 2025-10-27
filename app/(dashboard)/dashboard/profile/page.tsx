@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button, Card, Label, TextInput } from 'flowbite-react';
-import { HiUser, HiMail, HiLockClosed } from 'react-icons/hi';
+import { HiUser, HiMail, HiLockClosed, HiMoon, HiSun } from 'react-icons/hi';
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [passwordMessage, setPasswordMessage] = useState('');
   const [profileError, setProfileError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -25,6 +26,12 @@ export default function ProfilePage() {
       setEmail(session.user.email || '');
     }
   }, [session]);
+
+  useEffect(() => {
+    // Detect current theme on mount
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkMode(isDark);
+  }, []);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +113,19 @@ export default function ProfilePage() {
     }
   };
 
+  const toggleTheme = () => {
+    const newIsDark = !isDarkMode;
+    setIsDarkMode(newIsDark);
+
+    if (newIsDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
@@ -118,6 +138,39 @@ export default function ProfilePage() {
       </div>
 
       <div className="space-y-6">
+        {/* Appearance Settings */}
+        <Card>
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Appearance
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Customize how FormBotz looks for you
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {isDarkMode ? (
+                <HiMoon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              ) : (
+                <HiSun className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              )}
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                </p>
+              </div>
+            </div>
+            <Button color="gray" onClick={toggleTheme}>
+              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            </Button>
+          </div>
+        </Card>
+
         {/* Profile Information */}
         <Card>
           <form onSubmit={handleUpdateProfile}>

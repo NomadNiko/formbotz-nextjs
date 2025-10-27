@@ -15,10 +15,27 @@ import {
   HiPencil,
 } from 'react-icons/hi';
 import Link from 'next/link';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
 import { Form as IForm, Step, StepType } from '@/types';
 import StepList from '@/components/builder/StepList';
 import StepEditor from '@/components/builder/StepEditor';
 import FormSettings from '@/components/builder/FormSettings';
+import WidgetSettings from '@/components/builder/WidgetSettings';
+import EmbedCodeDisplay from '@/components/builder/EmbedCodeDisplay';
 import { getStepTypeLabel, getStepIcon, createStepTemplate, validateAndFixReplayTargets } from '@/lib/utils/stepHelpers';
 import { getAvailableVariables, validateFormConditionalLogic, validateMessageVariables } from '@/lib/utils/formValidation';
 
@@ -27,6 +44,7 @@ export default function FormEditorPage() {
   const formId = params.formId as string;
 
   const [form, setForm] = useState<IForm | null>(null);
+  const [originalForm, setOriginalForm] = useState<IForm | null>(null);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -51,6 +69,7 @@ export default function FormEditorPage() {
 
       if (response.ok) {
         setForm(data.form);
+        setOriginalForm(JSON.parse(JSON.stringify(data.form)));
         if (data.form.steps && data.form.steps.length > 0) {
           setSelectedStepId(data.form.steps[0].id);
         }
@@ -123,6 +142,7 @@ export default function FormEditorPage() {
 
       if (response.ok) {
         setForm(data.form);
+        setOriginalForm(JSON.parse(JSON.stringify(data.form)));
         setSuccessMessage('Form saved successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
@@ -215,6 +235,29 @@ export default function FormEditorPage() {
     });
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !form) return;
+
+    const oldIndex = form.steps.findIndex((step) => step.id === active.id);
+    const newIndex = form.steps.findIndex((step) => step.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reorderedSteps = arrayMove(form.steps, oldIndex, newIndex).map(
+        (step, index) => ({ ...step, order: index })
+      );
+      handleReorderSteps(reorderedSteps);
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const handleOpenRenameModal = () => {
     setNewFormName(form?.name || '');
     setShowRenameModal(true);
@@ -258,6 +301,11 @@ export default function FormEditorPage() {
   const availableVariables = form && selectedStepIndex >= 0
     ? getAvailableVariables(form.steps, selectedStepIndex)
     : [];
+
+  // Check if form has changes
+  const hasChanges = originalForm && form
+    ? JSON.stringify(form) !== JSON.stringify(originalForm)
+    : false;
 
   if (isLoading) {
     return (
@@ -314,7 +362,7 @@ export default function FormEditorPage() {
 
         <div className="flex gap-2">
           <Link href={`/chat/${form.publicUrl}`} target="_blank">
-            <Button color="light" size="sm" disabled={!form.publicUrl}>
+            <Button color="gray" size="sm" disabled={!form.publicUrl}>
               <HiEye className="mr-2 h-4 w-4" />
               Preview
             </Button>
@@ -326,7 +374,7 @@ export default function FormEditorPage() {
             </Button>
           </Link>
           <Button
-            color={form.status === 'published' ? 'warning' : 'success'}
+            color="gray"
             size="sm"
             onClick={handlePublish}
             disabled={form.steps.length === 0}
@@ -334,7 +382,7 @@ export default function FormEditorPage() {
             <HiGlobeAlt className="mr-2 h-4 w-4" />
             {form.status === 'published' ? 'Unpublish' : 'Publish'}
           </Button>
-          <Button color="blue" size="sm" onClick={handleSave} disabled={isSaving}>
+          <Button color="gray" size="sm" onClick={handleSave} disabled={isSaving || !hasChanges}>
             <HiSave className="mr-2 h-4 w-4" />
             {isSaving ? 'Saving...' : 'Save'}
           </Button>
@@ -427,13 +475,24 @@ export default function FormEditorPage() {
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto overflow-x-visible">
-                  <StepList
-                    steps={form.steps}
-                    selectedStepId={selectedStepId}
-                    onSelectStep={setSelectedStepId}
-                    onReorder={handleReorderSteps}
-                    onDelete={handleDeleteStep}
-                  />
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={form.steps.map((step) => step.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <StepList
+                        steps={form.steps}
+                        selectedStepId={selectedStepId}
+                        onSelectStep={setSelectedStepId}
+                        onReorder={handleReorderSteps}
+                        onDelete={handleDeleteStep}
+                      />
+                    </SortableContext>
+                  </DndContext>
                 </div>
               </div>
             )}
@@ -498,6 +557,31 @@ export default function FormEditorPage() {
                     onUpdate={(settings) => setForm({ ...form, settings })}
                     onActionsUpdate={(formActions) => setForm({ ...form, formActions })}
                   />
+
+                  {/* Widget Settings Section */}
+                  <div className="mt-6 border-t pt-6 dark:border-gray-700">
+                    <WidgetSettings
+                      settings={form.settings.widgetSettings || {}}
+                      brandColor={form.settings.brandColor}
+                      onUpdate={(widgetSettings) =>
+                        setForm({
+                          ...form,
+                          settings: {
+                            ...form.settings,
+                            widgetSettings: {
+                              ...form.settings.widgetSettings,
+                              ...widgetSettings,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* Embed Code Section */}
+                  <div className="mt-6 border-t pt-6 dark:border-gray-700">
+                    <EmbedCodeDisplay publicUrl={form.publicUrl} />
+                  </div>
 
                   <div className="mt-6 border-t pt-6 dark:border-gray-700">
                     <h4 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
