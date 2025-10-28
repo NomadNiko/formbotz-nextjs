@@ -136,10 +136,12 @@ export default function DashboardNav() {
               return navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.href === activeHref;
+                const tourId = item.label.toLowerCase().replace(' ', '-');
                 return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  data-tour={`nav-${tourId}`}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300'

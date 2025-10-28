@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button, Badge, Modal } from 'flowbite-react';
@@ -12,9 +10,6 @@ import {
   HiEye,
   HiClipboardList,
   HiChartBar,
-  HiCheckCircle,
-  HiClock,
-  HiX,
 } from 'react-icons/hi';
 import { getCurrentUser } from '@/lib/auth/session';
 import connectDB from '@/lib/db/mongodb';
@@ -48,9 +43,15 @@ interface SubmissionWithForm {
   data?: Record<string, unknown>;
 }
 
+interface FormFromMap {
+  _id: unknown;
+  name: string;
+  displayName?: string;
+}
+
 function SubmissionCard({ submission, form, isCompleted, isAbandoned }: {
   submission: SubmissionWithForm;
-  form: any;
+  form: FormFromMap | undefined;
   isCompleted: boolean;
   isAbandoned: boolean;
 }) {
@@ -79,13 +80,13 @@ function SubmissionCard({ submission, form, isCompleted, isAbandoned }: {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Button color="light" size="xs" onClick={() => setShowModal(true)} aria-label="View submission details">
+          <div className="flex items-center gap-1" data-tour="submission-actions">
+            <Button color="light" size="xs" onClick={() => setShowModal(true)} aria-label="View submission details" data-tour="submission-view-btn">
               <HiEye className="h-3 w-3" aria-hidden="true" />
               <span className="sr-only">View Details</span>
             </Button>
             <Link href={`/dashboard/forms/${String(form?._id)}/submissions`} aria-label={`View all submissions for ${form?.displayName || form?.name}`}>
-              <Button color="light" size="xs">
+              <Button color="light" size="xs" data-tour="submission-all-btn">
                 <HiClipboardList className="h-3 w-3" aria-hidden="true" />
                 <span className="sr-only">All Submissions</span>
               </Button>
@@ -137,7 +138,7 @@ function SubmissionCard({ submission, form, isCompleted, isAbandoned }: {
   );
 }
 
-export default async function DashboardPage() {
+async function DashboardContent() {
   const user = await getCurrentUser();
   await connectDB();
 
@@ -354,7 +355,7 @@ export default async function DashboardPage() {
               Recent Forms
             </h2>
             <Link href="/dashboard/forms">
-              <Button color="light" size="sm">
+              <Button color="light" size="sm" data-tour="view-all-forms">
                 View All
               </Button>
             </Link>
@@ -407,21 +408,21 @@ export default async function DashboardPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1" data-tour="form-actions">
                       <Link href={`/dashboard/forms/${String(form._id)}/edit`} aria-label={`Edit ${form.displayName || form.name}`}>
-                        <Button color="light" size="xs">
+                        <Button color="light" size="xs" data-tour="form-edit-btn">
                           <HiPencilAlt className="h-3 w-3" aria-hidden="true" />
                           <span className="sr-only">Edit</span>
                         </Button>
                       </Link>
                       <Link href={`/chat/${form.publicUrl}`} target="_blank" rel="noopener noreferrer" aria-label={`View ${form.displayName || form.name} live`}>
-                        <Button color="light" size="xs">
+                        <Button color="light" size="xs" data-tour="form-view-btn">
                           <HiEye className="h-3 w-3" aria-hidden="true" />
                           <span className="sr-only">View Live</span>
                         </Button>
                       </Link>
                       <Link href={`/dashboard/forms/${String(form._id)}/submissions`} aria-label={`View submissions for ${form.displayName || form.name}`}>
-                        <Button color="light" size="xs">
+                        <Button color="light" size="xs" data-tour="form-submissions-btn">
                           <HiClipboardList className="h-3 w-3" aria-hidden="true" />
                           <span className="sr-only">Submissions</span>
                         </Button>
@@ -531,4 +532,8 @@ export default async function DashboardPage() {
       )}
     </div>
   );
+}
+
+export default function DashboardPage() {
+  return <DashboardContent />;
 }
