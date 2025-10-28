@@ -43,7 +43,7 @@ export default function AdminFormsPage() {
 
   useEffect(() => {
     fetchForms();
-  }, [currentPage, search, statusFilter]);
+  }, [currentPage, search, statusFilter, fetchForms]);
 
   const handleDelete = async (formId: string, formName: string) => {
     if (!confirm(`Delete form "${formName}"? This will also delete all submissions.`)) return;

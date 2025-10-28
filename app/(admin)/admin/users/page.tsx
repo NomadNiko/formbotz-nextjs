@@ -39,7 +39,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, search, roleFilter, planFilter]);
+  }, [currentPage, search, roleFilter, planFilter, fetchUsers]);
 
   const handleDelete = async (userId: string) => {
     if (!confirm('Delete this user? This action cannot be undone.')) return;

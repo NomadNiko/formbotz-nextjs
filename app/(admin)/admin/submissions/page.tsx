@@ -47,7 +47,7 @@ export default function AdminSubmissionsPage() {
 
   useEffect(() => {
     fetchSubmissions();
-  }, [currentPage, statusFilter]);
+  }, [currentPage, statusFilter, fetchSubmissions]);
 
   const handleDelete = async (submissionId: string) => {
     if (!confirm('Delete this submission? This action cannot be undone.')) return;
