@@ -100,13 +100,12 @@ export default async function DashboardPage() {
     return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
   };
 
-  // Recent activity (last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentSubmissions = allSubmissions.filter(s =>
-    new Date(s.createdAt).getTime() >= sevenDaysAgo.getTime()
-  );
-  const recentCompletions = recentSubmissions.filter(s => s.status === SubmissionStatus.COMPLETED).length;
+  // Active form actions (published forms with actions)
+  const activeFormActions = allForms.filter(f => 
+    f.status === FormStatus.PUBLISHED && 
+    f.formActions && 
+    f.formActions.length > 0
+  ).length;
 
   // Get top 5 recent submissions
   const latestSubmissions = allSubmissions
@@ -233,18 +232,18 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Last 7 Days */}
+        {/* Active Form Actions */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Last 7 Days
+                Active Form Actions
               </p>
               <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-                {recentSubmissions.length}
+                {activeFormActions}
               </p>
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                {recentCompletions} completed
+                {publishedForms} published forms
               </div>
             </div>
             <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900/20">
