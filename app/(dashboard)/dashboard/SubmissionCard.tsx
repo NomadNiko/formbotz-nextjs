@@ -70,9 +70,14 @@ export default function SubmissionCard({ submission, form, isCompleted, isAbando
       {showModal && (
         <Modal show onClose={() => setShowModal(false)} size="lg">
           <div className="p-6">
-            <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">
-              Submission Details
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                Submission Details
+              </h3>
+              <Button color="gray" size="xs" onClick={() => setShowModal(false)}>
+                Close
+              </Button>
+            </div>
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Form</p>
