@@ -180,7 +180,7 @@ export default async function DashboardPage() {
                 </span>
               </div>
             </div>
-            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/20">
+            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/20" aria-hidden="true">
               <HiViewBoards className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
                 </span>
               </div>
             </div>
-            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
+            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20" aria-hidden="true">
               <HiInbox className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
           </div>
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
                 Avg time: {formatAvgTime(avgCompletionTime)}
               </div>
             </div>
-            <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900/20">
+            <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900/20" aria-hidden="true">
               <HiChartBar className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
                 {publishedForms} published forms
               </div>
             </div>
-            <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900/20">
+            <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900/20" aria-hidden="true">
               <HiTrendingUp className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
@@ -270,7 +270,7 @@ export default async function DashboardPage() {
 
           {formStats.length === 0 ? (
             <div className="py-12 text-center">
-              <HiViewBoards className="mx-auto h-16 w-16 text-gray-400" />
+              <HiViewBoards className="mx-auto h-16 w-16 text-gray-400" aria-hidden="true" />
               <p className="mt-3 text-sm font-medium text-gray-900 dark:text-white">
                 No forms yet
               </p>
@@ -316,19 +316,22 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Link href={`/dashboard/forms/${String(form._id)}/edit`}>
+                      <Link href={`/dashboard/forms/${String(form._id)}/edit`} aria-label={`Edit ${form.displayName || form.name}`}>
                         <Button color="light" size="xs">
-                          <HiPencilAlt className="h-3 w-3" />
+                          <HiPencilAlt className="h-3 w-3" aria-hidden="true" />
+                          <span className="sr-only">Edit</span>
                         </Button>
                       </Link>
-                      <Link href={`/chat/${form.publicUrl}`} target="_blank">
+                      <Link href={`/chat/${form.publicUrl}`} target="_blank" rel="noopener noreferrer" aria-label={`View ${form.displayName || form.name} live`}>
                         <Button color="light" size="xs">
-                          <HiEye className="h-3 w-3" />
+                          <HiEye className="h-3 w-3" aria-hidden="true" />
+                          <span className="sr-only">View Live</span>
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/forms/${String(form._id)}/submissions`}>
+                      <Link href={`/dashboard/forms/${String(form._id)}/submissions`} aria-label={`View submissions for ${form.displayName || form.name}`}>
                         <Button color="light" size="xs">
-                          <HiClipboardList className="h-3 w-3" />
+                          <HiClipboardList className="h-3 w-3" aria-hidden="true" />
+                          <span className="sr-only">Submissions</span>
                         </Button>
                       </Link>
                     </div>
@@ -354,7 +357,7 @@ export default async function DashboardPage() {
 
           {latestSubmissions.length === 0 ? (
             <div className="py-12 text-center">
-              <HiInbox className="mx-auto h-16 w-16 text-gray-400" />
+              <HiInbox className="mx-auto h-16 w-16 text-gray-400" aria-hidden="true" />
               <p className="mt-3 text-sm font-medium text-gray-900 dark:text-white">
                 No submissions yet
               </p>
@@ -381,13 +384,22 @@ export default async function DashboardPage() {
                             {form?.displayName || form?.name || 'Unknown Form'}
                           </p>
                           {isCompleted && (
-                            <HiCheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" title="Completed" />
+                            <>
+                              <HiCheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" aria-hidden="true" />
+                              <span className="sr-only">Completed</span>
+                            </>
                           )}
                           {isAbandoned && (
-                            <HiX className="h-4 w-4 text-red-600 flex-shrink-0" title="Abandoned" />
+                            <>
+                              <HiX className="h-4 w-4 text-red-600 flex-shrink-0" aria-hidden="true" />
+                              <span className="sr-only">Abandoned</span>
+                            </>
                           )}
                           {!isCompleted && !isAbandoned && (
-                            <HiClock className="h-4 w-4 text-yellow-600 flex-shrink-0" title="Incomplete" />
+                            <>
+                              <HiClock className="h-4 w-4 text-yellow-600 flex-shrink-0" aria-hidden="true" />
+                              <span className="sr-only">In Progress</span>
+                            </>
                           )}
                         </div>
                         <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
@@ -430,7 +442,7 @@ export default async function DashboardPage() {
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20" aria-hidden="true">
                 <HiPlus className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
@@ -447,7 +459,7 @@ export default async function DashboardPage() {
             </div>
 
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/20">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/20" aria-hidden="true">
                 <HiViewBoards className="h-8 w-8 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
@@ -459,7 +471,7 @@ export default async function DashboardPage() {
             </div>
 
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20" aria-hidden="true">
                 <HiTrendingUp className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
