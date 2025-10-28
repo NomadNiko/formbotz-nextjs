@@ -51,6 +51,8 @@ export default function DashboardNav() {
     signOut({ callbackUrl: '/login' });
   };
 
+  const isAdmin = session?.user?.role === 'admin';
+
   const navItems = [
     { href: '/dashboard', icon: HiChartPie, label: 'Dashboard' },
     { href: '/dashboard/forms', icon: HiViewBoards, label: 'My Forms' },
@@ -156,6 +158,16 @@ export default function DashboardNav() {
 
         {/* Bottom Actions */}
         <div className="space-y-1 border-t pt-2 dark:border-gray-700">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-900/20"
+              title="Admin Panel"
+            >
+              <HiLightningBolt className="h-5 w-5 flex-shrink-0" />
+              {!isCollapsed && <span>Admin Panel</span>}
+            </Link>
+          )}
           <Link
             href="/dashboard/profile"
             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
