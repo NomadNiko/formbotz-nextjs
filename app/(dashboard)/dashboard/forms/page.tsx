@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button, Card, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-react';
+import { Button, Card, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Dropdown, DropdownItem, DropdownDivider, Pagination } from 'flowbite-react';
 import { HiPlus, HiPencil, HiTrash, HiEye, HiExternalLink, HiClipboardList, HiDuplicate, HiDotsVertical } from 'react-icons/hi';
 import { Form as IForm } from '@/types';
 import { format } from 'date-fns';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function FormsListPage() {
   const router = useRouter();
@@ -14,6 +16,7 @@ export default function FormsListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchForms();
@@ -94,6 +97,15 @@ export default function FormsListPage() {
     }
   };
 
+  const totalPages = Math.ceil(forms.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedForms = forms.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const onPageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -146,20 +158,21 @@ export default function FormsListPage() {
           </div>
         </Card>
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
-          <Table hoverable>
-              <TableHead>
-                <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Status</TableHeadCell>
-                <TableHeadCell>Steps</TableHeadCell>
-                <TableHeadCell>Form Actions</TableHeadCell>
-                <TableHeadCell>Submissions</TableHeadCell>
-                <TableHeadCell>Completion Rate</TableHeadCell>
-                <TableHeadCell>Last Updated</TableHeadCell>
-                <TableHeadCell>Actions</TableHeadCell>
-              </TableHead>
-              <TableBody className="divide-y">
-                {forms.map((form) => (
+        <>
+          <div className="rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
+            <Table hoverable>
+                <TableHead>
+                  <TableHeadCell>Name</TableHeadCell>
+                  <TableHeadCell>Status</TableHeadCell>
+                  <TableHeadCell>Steps</TableHeadCell>
+                  <TableHeadCell>Form Actions</TableHeadCell>
+                  <TableHeadCell>Submissions</TableHeadCell>
+                  <TableHeadCell>Completion Rate</TableHeadCell>
+                  <TableHeadCell>Last Updated</TableHeadCell>
+                  <TableHeadCell>Actions</TableHeadCell>
+                </TableHead>
+                <TableBody className="divide-y">
+                  {paginatedForms.map((form) => (
                   <TableRow
                     key={form._id}
                     className="bg-white dark:border-gray-700 dark:bg-gray-800"
@@ -255,10 +268,21 @@ export default function FormsListPage() {
                       </Dropdown>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-        </div>
+                  ))}
+                </TableBody>
+              </Table>
+          </div>
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={onPageChange}
+                showIcons
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
