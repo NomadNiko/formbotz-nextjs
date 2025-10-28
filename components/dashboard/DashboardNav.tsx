@@ -60,6 +60,7 @@ export default function DashboardNav() {
 
   return (
     <aside
+      data-tour="sidebar"
       className={`h-screen flex-shrink-0 border-r bg-white transition-all duration-300 dark:border-gray-700 dark:bg-gray-800 ${
         isCollapsed ? 'w-16' : 'w-64'
       }`}

@@ -18,6 +18,7 @@ import connectDB from '@/lib/db/mongodb';
 import { Form, Submission } from '@/lib/db/models';
 import { FormStatus, SubmissionStatus } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
+import DashboardClient from './DashboardClient';
 
 // Force dynamic rendering - always fetch fresh data
 export const dynamic = 'force-dynamic';
@@ -147,16 +148,19 @@ export default async function DashboardPage() {
             }
           </p>
         </div>
-        <Link href="/dashboard/forms/new">
-          <Button color="blue" size="lg">
-            <HiPlus className="mr-2 h-5 w-5" />
-            Create Form
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <DashboardClient />
+          <Link href="/dashboard/forms/new">
+            <Button color="blue" size="lg">
+              <HiPlus className="mr-2 h-5 w-5" />
+              Create Form
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div data-tour="stats" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Forms */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center justify-between">
@@ -253,7 +257,7 @@ export default async function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Forms */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div data-tour="recent-forms" className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Recent Forms
@@ -282,88 +286,53 @@ export default async function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {formStats.map((form: FormWithStats) => (
                 <div
                   key={String(form._id)}
-                  className="rounded-lg border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-900/50"
+                  className="rounded-lg border border-gray-200 bg-gray-50 p-3 transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-900/50 dark:hover:bg-gray-800"
                 >
-                  {/* Form Header */}
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {form.displayName || form.name}
                         </h3>
                         {form.status === FormStatus.PUBLISHED ? (
-                          <Badge color="success" size="sm">Published</Badge>
+                          <Badge color="success" size="xs">Published</Badge>
                         ) : (
-                          <Badge color="warning" size="sm">Draft</Badge>
+                          <Badge color="warning" size="xs">Draft</Badge>
                         )}
                       </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Updated {formatDistanceToNow(new Date(form.updatedAt), { addSuffix: true })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Form Stats */}
-                  <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-                    <div className="rounded bg-white p-2 dark:bg-gray-800">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Steps</p>
-                      <p className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
-                        {form.steps?.length || 0}
-                      </p>
-                    </div>
-                    <div className="rounded bg-white p-2 dark:bg-gray-800">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Submissions</p>
-                      <p className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
-                        {form.submissionCount}
-                      </p>
-                    </div>
-                    <div className="rounded bg-white p-2 dark:bg-gray-800">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">Completed</p>
-                      <p className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
-                        {form.completedCount}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Completion Rate Bar */}
-                  {form.submissionCount > 0 && (
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-gray-600 dark:text-gray-400">Completion Rate</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {form.realCompletionRate}%
-                        </span>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                        <span>{form.steps?.length || 0} steps</span>
+                        <span>•</span>
+                        <span>{form.submissionCount} submissions</span>
+                        {form.submissionCount > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>{form.realCompletionRate}% completed</span>
+                          </>
+                        )}
                       </div>
-                      <Progress
-                        progress={form.realCompletionRate}
-                        size="sm"
-                        color={form.realCompletionRate >= 70 ? 'green' : form.realCompletionRate >= 40 ? 'yellow' : 'red'}
-                      />
                     </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="mt-3 flex items-center gap-2">
-                    <Link href={`/dashboard/forms/${String(form._id)}/edit`} className="flex-1">
-                      <Button color="light" size="xs" className="w-full">
-                        <HiPencilAlt className="mr-1 h-3 w-3" />
-                        Edit
-                      </Button>
-                    </Link>
-                    <Link href={`/chat/${form.publicUrl}`} target="_blank">
-                      <Button color="light" size="xs">
-                        <HiEye className="h-3 w-3" />
-                      </Button>
-                    </Link>
-                    <Link href={`/dashboard/forms/${String(form._id)}/submissions`}>
-                      <Button color="light" size="xs">
-                        <HiClipboardList className="h-3 w-3" />
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-1">
+                      <Link href={`/dashboard/forms/${String(form._id)}/edit`}>
+                        <Button color="light" size="xs">
+                          <HiPencilAlt className="h-3 w-3" />
+                        </Button>
+                      </Link>
+                      <Link href={`/chat/${form.publicUrl}`} target="_blank">
+                        <Button color="light" size="xs">
+                          <HiEye className="h-3 w-3" />
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/forms/${String(form._id)}/submissions`}>
+                        <Button color="light" size="xs">
+                          <HiClipboardList className="h-3 w-3" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -372,7 +341,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Submissions */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div data-tour="recent-submissions" className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Recent Submissions
