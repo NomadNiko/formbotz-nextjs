@@ -15,10 +15,11 @@ export async function DELETE(
     await Submission.findByIdAndDelete(submissionId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to delete submission';
     return NextResponse.json(
-      { error: error.message || 'Failed to delete submission' },
-      { status: error.message?.includes('Unauthorized') ? 403 : 500 }
+      { error: message },
+      { status: message.includes('Unauthorized') ? 403 : 500 }
     );
   }
 }

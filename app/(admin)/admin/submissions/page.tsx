@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell, Select, Pagination } from 'flowbite-react';
 import { Modal } from 'flowbite-react';
 import { HiTrash, HiEye } from 'react-icons/hi';
@@ -27,7 +27,7 @@ export default function AdminSubmissionsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewingSubmission, setViewingSubmission] = useState<SubmissionWithDetails | null>(null);
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({
       page: currentPage.toString(),
@@ -43,7 +43,7 @@ export default function AdminSubmissionsPage() {
       setTotalPages(data.pagination.pages);
     }
     setLoading(false);
-  };
+  }, [currentPage, statusFilter]);
 
   useEffect(() => {
     fetchSubmissions();

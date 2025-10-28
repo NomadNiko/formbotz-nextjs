@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell, TextInput, Select, Pagination } from 'flowbite-react';
 import { HiSearch, HiPencil, HiTrash } from 'react-icons/hi';
 import { User } from '@/types';
@@ -17,7 +17,7 @@ export default function AdminUsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({
       page: currentPage.toString(),
@@ -35,7 +35,7 @@ export default function AdminUsersPage() {
       setTotalPages(data.pagination.pages);
     }
     setLoading(false);
-  };
+  }, [currentPage, search, roleFilter, planFilter]);
 
   useEffect(() => {
     fetchUsers();

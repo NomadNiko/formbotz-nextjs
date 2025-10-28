@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button, Badge, Table, Spinner, TableHead, TableBody, TableRow, TableCell, TableHeadCell, TextInput, Select, Pagination } from 'flowbite-react';
 import { HiSearch, HiTrash, HiExternalLink } from 'react-icons/hi';
 import { Form } from '@/types';
@@ -22,7 +22,7 @@ export default function AdminFormsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchForms = async () => {
+  const fetchForms = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({
       page: currentPage.toString(),
@@ -39,7 +39,7 @@ export default function AdminFormsPage() {
       setTotalPages(data.pagination.pages);
     }
     setLoading(false);
-  };
+  }, [currentPage, search, statusFilter]);
 
   useEffect(() => {
     fetchForms();

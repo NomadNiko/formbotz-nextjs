@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Button, Badge, Progress } from 'flowbite-react';
+import { Button, Badge } from 'flowbite-react';
 import {
   HiPlus,
   HiViewBoards,

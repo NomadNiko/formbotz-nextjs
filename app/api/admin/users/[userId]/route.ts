@@ -22,7 +22,7 @@ export async function PATCH(
       );
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (name) updateData.name = name;
     if (email) updateData.email = email;
     if (role) updateData.role = role;
@@ -39,10 +39,11 @@ export async function PATCH(
     }
 
     return NextResponse.json({ user });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update user';
     return NextResponse.json(
-      { error: error.message || 'Failed to update user' },
-      { status: error.message?.includes('Unauthorized') ? 403 : 500 }
+      { error: message },
+      { status: message.includes('Unauthorized') ? 403 : 500 }
     );
   }
 }
@@ -76,10 +77,11 @@ export async function DELETE(
     await User.findByIdAndDelete(userId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to delete user';
     return NextResponse.json(
-      { error: error.message || 'Failed to delete user' },
-      { status: error.message?.includes('Unauthorized') ? 403 : 500 }
+      { error: message },
+      { status: message.includes('Unauthorized') ? 403 : 500 }
     );
   }
 }

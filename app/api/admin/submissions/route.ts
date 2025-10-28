@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || '';
     const formId = searchParams.get('formId') || '';
 
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     
     if (status) query.status = status;
     if (formId) query.formId = formId;
@@ -61,10 +61,11 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch submissions';
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch submissions' },
-      { status: error.message?.includes('Unauthorized') ? 403 : 500 }
+      { error: message },
+      { status: message.includes('Unauthorized') ? 403 : 500 }
     );
   }
 }

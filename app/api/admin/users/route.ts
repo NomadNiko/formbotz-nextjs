@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role') || '';
     const plan = searchParams.get('plan') || '';
 
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     
     if (search) {
       query.$or = [
@@ -45,10 +45,11 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch users';
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch users' },
-      { status: error.message?.includes('Unauthorized') ? 403 : 500 }
+      { error: message },
+      { status: message.includes('Unauthorized') ? 403 : 500 }
     );
   }
 }
