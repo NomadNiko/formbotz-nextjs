@@ -295,3 +295,35 @@ body {
   overflow-wrap: break-word;
   hyphens: auto;
 }
+
+/* ========================================
+   DRIVER.JS TOUR CUSTOMIZATION
+   ======================================== */
+
+/* Match application font and increase sizes */
+.driver-popover {
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.driver-popover-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.driver-popover-description {
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.95rem !important;
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.driver-popover-footer button {
+  font-size: 1rem !important;
+  font-family: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif !important;
+  padding: 0.625rem 1.25rem !important;
+}
