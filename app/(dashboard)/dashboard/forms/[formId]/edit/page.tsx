@@ -36,7 +36,7 @@ import StepEditor from '@/components/builder/StepEditor';
 import FormSettings from '@/components/builder/FormSettings';
 import WidgetSettings from '@/components/builder/WidgetSettings';
 import EmbedCodeDisplay from '@/components/builder/EmbedCodeDisplay';
-import { getStepTypeLabel, getStepIcon, createStepTemplate, validateAndFixReplayTargets } from '@/lib/utils/stepHelpers';
+import { getStepTypeLabel, createStepTemplate, validateAndFixReplayTargets } from '@/lib/utils/stepHelpers';
 import { getAvailableVariables, validateFormConditionalLogic, validateMessageVariables } from '@/lib/utils/formValidation';
 
 export default function FormEditorPage() {
@@ -464,7 +464,7 @@ export default function FormEditorPage() {
                                 >
                                   <span>{getStepTypeLabel(type)}</span>
                                 </button>
-                              ))
+                              ))}
                             </div>
                           </div>
                         </>
