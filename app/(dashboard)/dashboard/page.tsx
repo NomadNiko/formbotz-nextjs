@@ -320,18 +320,14 @@ async function DashboardContent() {
                           <span className="sr-only">Edit</span>
                         </Button>
                       </Link>
-                      <Link href={`/chat/${form.publicUrl}`} target="_blank" rel="noopener noreferrer" aria-label={`View ${form.displayName || form.name} live`}>
-                        <Button color="light" size="xs" data-tour="form-view-btn">
-                          <HiEye className="h-3 w-3" aria-hidden="true" />
-                          <span className="sr-only">View Live</span>
-                        </Button>
-                      </Link>
-                      <Link href={`/dashboard/forms/${String(form._id)}/submissions`} aria-label={`View submissions for ${form.displayName || form.name}`}>
-                        <Button color="light" size="xs" data-tour="form-submissions-btn">
-                          <HiClipboardList className="h-3 w-3" aria-hidden="true" />
-                          <span className="sr-only">Submissions</span>
-                        </Button>
-                      </Link>
+                      <Button color="light" size="xs" data-tour="form-view-btn" disabled={form.status !== FormStatus.PUBLISHED}>
+                        <HiEye className="h-3 w-3" aria-hidden="true" />
+                        <span className="sr-only">View Live</span>
+                      </Button>
+                      <Button color="light" size="xs" data-tour="form-submissions-btn" disabled={form.status !== FormStatus.PUBLISHED}>
+                        <HiClipboardList className="h-3 w-3" aria-hidden="true" />
+                        <span className="sr-only">Submissions</span>
+                      </Button>
                     </div>
                   </div>
                 </div>

@@ -634,7 +634,7 @@ export default function FormEditorPage() {
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                               Stats
                             </p>
-                            <div className="mt-2 space-y-1 text-sm">
+                            <div className="mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-300">
                               <p>Views: {form.stats?.views || 0}</p>
                               <p>Starts: {form.stats?.starts || 0}</p>
                               <p>Completions: {form.stats?.completions || 0}</p>
