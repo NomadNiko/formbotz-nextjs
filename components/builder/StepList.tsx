@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { HiTrash, HiDuplicate, HiMenu } from 'react-icons/hi';
-import { Step, StepType } from '@/types';
-import { getStepTypeLabel } from '@/lib/utils/stepHelpers';
-import { v4 as uuidv4 } from 'uuid';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { HiTrash, HiDuplicate, HiMenu } from "react-icons/hi";
+import { Step, StepType } from "@/types";
+import { getStepTypeLabel } from "@/lib/utils/stepHelpers";
+import { v4 as uuidv4 } from "uuid";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface StepListProps {
   steps: Step[];
@@ -56,8 +56,8 @@ function SortableStepItem({
       style={style}
       className={`group cursor-pointer rounded-lg border p-3 transition-all hover:shadow-md ${
         selectedStepId === step.id
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-          : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+          : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
       }`}
       onClick={() => onSelectStep(step.id)}
     >
@@ -68,7 +68,7 @@ function SortableStepItem({
           {...listeners}
           {...attributes}
           onClick={(e) => e.stopPropagation()}
-          className="cursor-grab rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 active:cursor-grabbing"
+          className="cursor-grab rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 active:cursor-grabbing dark:hover:bg-gray-700 dark:hover:text-gray-300"
           title="Drag to reorder"
         >
           <HiMenu className="h-4 w-4" />
@@ -76,7 +76,7 @@ function SortableStepItem({
 
         <div className="flex-1">
           {/* Header row with step number, type, and action buttons */}
-          <div className="flex items-center justify-between mb-1">
+          <div className="mb-1 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-gray-500">
                 Step {index + 1}
@@ -101,7 +101,7 @@ function SortableStepItem({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm('Delete this step?')) {
+                  if (confirm("Delete this step?")) {
                     onDelete(step.id);
                   }
                 }}
@@ -115,7 +115,7 @@ function SortableStepItem({
 
           {/* Message content */}
           <p className="line-clamp-2 text-sm text-gray-700 dark:text-gray-300">
-            {step.display.messages[0]?.text || 'Empty message'}
+            {step.display.messages[0]?.text || "Empty message"}
           </p>
 
           {/* Variable and replay badges */}
@@ -125,18 +125,22 @@ function SortableStepItem({
                 {step.collect.variableName}
               </span>
             )}
-            {step.type === StepType.REPLAY && step.replayTarget !== undefined && (() => {
-              const targetStep = steps.find(s => s.id === step.replayTarget);
-              return targetStep ? (
-                <span className="inline-block rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                  Replay: Step {targetStep.order + 1}
-                </span>
-              ) : (
-                <span className="inline-block rounded bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900 dark:text-red-300">
-                  Replay: Invalid target
-                </span>
-              );
-            })()}
+            {step.type === StepType.REPLAY &&
+              step.replayTarget !== undefined &&
+              (() => {
+                const targetStep = steps.find(
+                  (s) => s.id === step.replayTarget,
+                );
+                return targetStep ? (
+                  <span className="inline-block rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                    Replay: Step {targetStep.order + 1}
+                  </span>
+                ) : (
+                  <span className="inline-block rounded bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900 dark:text-red-300">
+                    Replay: Invalid target
+                  </span>
+                );
+              })()}
           </div>
         </div>
       </div>
@@ -205,7 +209,7 @@ export default function StepList({
   };
 
   return (
-    <div className="space-y-2">
+    <div data-tour="step-list" className="space-y-2">
       {steps.map((step, index) => (
         <SortableStepItem
           key={step.id}

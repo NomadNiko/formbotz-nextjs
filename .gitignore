@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/tmp
 
 # next.js
 /.next/
@@ -45,3 +46,9 @@ CONDITIONAL_LOGIC_CHANGES.md
 FORM_ACTIONS_DESIGN.md
 INLINE_CHAT_INPUT_CHANGES.md
 package-lock.json
+forms-backup*.json
+mongodb-backup*.json
+FORM_BUILDER_TOUR_IMPLEMENTATION.md
+docs/form-builder-tour.md
+docs/TOUR_QUICK_REFERENCE.md
+docs/TOUR_VISUAL_GUIDE.md

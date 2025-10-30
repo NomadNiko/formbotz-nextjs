@@ -1,11 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Label, TextInput, Textarea, Select, Checkbox, Button } from 'flowbite-react';
-import { HiPlus, HiTrash } from 'react-icons/hi';
-import { Step, StepType, DataType, ChoiceOption, Condition, ConditionalOperator, LogicalOperator } from '@/types';
-import { getStepTypeLabel, getDataTypeLabel } from '@/lib/utils/stepHelpers';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect } from "react";
+import {
+  Label,
+  TextInput,
+  Textarea,
+  Select,
+  Checkbox,
+  Button,
+} from "flowbite-react";
+import { HiPlus, HiTrash } from "react-icons/hi";
+import {
+  Step,
+  StepType,
+  DataType,
+  ChoiceOption,
+  Condition,
+  ConditionalOperator,
+  LogicalOperator,
+} from "@/types";
+import { getStepTypeLabel, getDataTypeLabel } from "@/lib/utils/stepHelpers";
+import { v4 as uuidv4 } from "uuid";
 
 interface StepEditorProps {
   step: Step;
@@ -14,7 +29,12 @@ interface StepEditorProps {
   allSteps?: Step[]; // All steps in the form (for replay target selection)
 }
 
-export default function StepEditor({ step, onUpdate, availableVariables = [], allSteps = [] }: StepEditorProps) {
+export default function StepEditor({
+  step,
+  onUpdate,
+  availableVariables = [],
+  allSteps = [],
+}: StepEditorProps) {
   const [localStep, setLocalStep] = useState<Step>(step);
 
   // Sync localStep when step prop changes (e.g., after deletion/reordering of other steps)
@@ -51,7 +71,11 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
     });
   };
 
-  const handleUpdateChoice = (index: number, field: keyof ChoiceOption, value: string | number | boolean | unknown) => {
+  const handleUpdateChoice = (
+    index: number,
+    field: keyof ChoiceOption,
+    value: string | number | boolean | unknown,
+  ) => {
     if (!localStep.input?.choices) return;
     const newChoices = [...localStep.input.choices];
     newChoices[index] = { ...newChoices[index], [field]: value };
@@ -70,9 +94,9 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
 
   const handleAddCondition = () => {
     const newCondition: Condition = {
-      variableName: '',
+      variableName: "",
       operator: ConditionalOperator.EQUALS,
-      value: '',
+      value: "",
     };
     const currentLogic = localStep.conditionalLogic || {
       showIf: [],
@@ -86,7 +110,11 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
     });
   };
 
-  const handleUpdateCondition = (index: number, field: keyof Condition, value: string) => {
+  const handleUpdateCondition = (
+    index: number,
+    field: keyof Condition,
+    value: string,
+  ) => {
     if (!localStep.conditionalLogic) return;
     const newConditions = [...localStep.conditionalLogic.showIf];
     newConditions[index] = { ...newConditions[index], [field]: value };
@@ -100,7 +128,9 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
 
   const handleDeleteCondition = (index: number) => {
     if (!localStep.conditionalLogic) return;
-    const newConditions = localStep.conditionalLogic.showIf.filter((_, i) => i !== index);
+    const newConditions = localStep.conditionalLogic.showIf.filter(
+      (_, i) => i !== index,
+    );
     if (newConditions.length === 0) {
       handleUpdate({ conditionalLogic: undefined });
     } else {
@@ -129,7 +159,7 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
   return (
     <div className="flex h-full flex-col">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 pb-4 border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div className="sticky top-0 z-10 mb-6 border-b border-gray-200 bg-white pb-4 dark:border-gray-700 dark:bg-gray-800">
         <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
           Edit Step
         </h2>
@@ -141,331 +171,376 @@ export default function StepEditor({ step, onUpdate, availableVariables = [], al
       </div>
 
       {/* Scrollable Content */}
-      <div className="space-y-6 flex-1">
-      {/* Message */}
-      <div>
-        <div className="mb-2 block">
-          <Label htmlFor="message">Message</Label>
-        </div>
-        <Textarea
-          id="message"
-          placeholder="Enter your message..."
-          rows={4}
-          value={localStep.display.messages[0]?.text || ''}
-          onChange={(e) => handleMessageChange(0, e.target.value)}
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Use {'{'}variableName{'}'} to insert collected data
-        </p>
-      </div>
-
-      {/* Input Configuration for choice-based steps */}
-      {localStep.input?.type === 'choice' && (
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <Label>Options</Label>
-            <Button size="xs" color="light" onClick={handleAddChoice}>
-              <HiPlus className="mr-1 h-3 w-3" />
-              Add Option
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {localStep.input.choices?.map((choice, index) => (
-              <div key={choice.id} className="flex gap-2">
-                <TextInput
-                  placeholder="Label"
-                  value={choice.label}
-                  onChange={(e) =>
-                    handleUpdateChoice(index, 'label', e.target.value)
-                  }
-                  className="flex-1"
-                />
-                <TextInput
-                  placeholder="Value"
-                  value={String(choice.value)}
-                  onChange={(e) =>
-                    handleUpdateChoice(index, 'value', e.target.value)
-                  }
-                  className="flex-1"
-                />
-                <Button
-                  size="sm"
-                  color="failure"
-                  onClick={() => handleDeleteChoice(index)}
-                >
-                  <HiTrash className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Data Type for text input */}
-      {localStep.input?.type === 'text' && (
-        <div>
+      <div className="flex-1 space-y-6">
+        {/* Message */}
+        <div data-tour="message-input">
           <div className="mb-2 block">
-            <Label htmlFor="dataType">Input Type</Label>
+            <Label htmlFor="message">Message</Label>
           </div>
-          <Select
-            id="dataType"
-            value={localStep.input.dataType || DataType.FREETEXT}
-            onChange={(e) =>
-              handleUpdate({
-                input: {
-                  ...localStep.input!,
-                  dataType: e.target.value as DataType,
-                },
-              })
-            }
-          >
-            {Object.values(DataType).map((type) => (
-              <option key={type} value={type}>
-                {getDataTypeLabel(type)}
-              </option>
-            ))}
-          </Select>
-        </div>
-      )}
-
-      {/* Placeholder for text input */}
-      {localStep.input?.type === 'text' && (
-        <div>
-          <div className="mb-2 block">
-            <Label htmlFor="placeholder">Placeholder</Label>
-          </div>
-          <TextInput
-            id="placeholder"
-            placeholder="Enter placeholder text..."
-            value={localStep.input.placeholder || ''}
-            onChange={(e) =>
-              handleUpdate({
-                input: { ...localStep.input!, placeholder: e.target.value },
-              })
-            }
+          <Textarea
+            id="message"
+            placeholder="Enter your message..."
+            rows={4}
+            value={localStep.display.messages[0]?.text || ""}
+            onChange={(e) => handleMessageChange(0, e.target.value)}
           />
-        </div>
-      )}
-
-      {/* Data Collection */}
-      {localStep.input?.type !== 'none' && (
-        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
-            Data Collection
-          </h3>
-
-          <div className="mb-4 flex items-center gap-2">
-            <Checkbox
-              id="collectData"
-              checked={localStep.collect?.enabled || false}
-              onChange={(e) =>
-                handleUpdate({
-                  collect: localStep.collect
-                    ? { ...localStep.collect, enabled: e.target.checked }
-                    : { enabled: e.target.checked, variableName: '', storageKey: '' },
-                })
-              }
-            />
-            <Label htmlFor="collectData">Collect and store this data</Label>
-          </div>
-
-          {localStep.collect?.enabled && (
-            <div className="space-y-3">
-              <div>
-                <div className="mb-2 block">
-                  <Label htmlFor="variableName">Variable Name</Label>
-                </div>
-                <TextInput
-                  id="variableName"
-                  placeholder="e.g., userName, userEmail"
-                  value={localStep.collect.variableName || ''}
-                  onChange={(e) =>
-                    handleUpdate({
-                      collect: {
-                        ...localStep.collect!,
-                        variableName: e.target.value,
-                        storageKey: e.target.value,
-                      },
-                    })
-                  }
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Use this name to reference the data: {'{'}
-                  {localStep.collect.variableName || 'variableName'}
-                  {'}'}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Replay Target Selector */}
-      {localStep.type === StepType.REPLAY && (
-        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
-            Replay Target
-          </h3>
-          <p className="mb-3 text-xs text-gray-500">
-            Select which previous step to replay when this step is executed
+          <p className="mt-1 text-xs text-gray-500">
+            Use {"{"}variableName{"}"} to insert collected data
           </p>
+        </div>
 
+        {/* Input Configuration for choice-based steps */}
+        {localStep.input?.type === "choice" && (
           <div>
-            <div className="mb-2 block">
-              <Label htmlFor="replayTarget">Target Step</Label>
+            <div className="mb-3 flex items-center justify-between">
+              <Label>Options</Label>
+              <Button size="xs" color="light" onClick={handleAddChoice}>
+                <HiPlus className="mr-1 h-3 w-3" />
+                Add Option
+              </Button>
             </div>
-            {allSteps.filter(s => s.order < localStep.order).length > 0 ? (
-              <Select
-                id="replayTarget"
-                value={localStep.replayTarget || ''}
-                onChange={(e) =>
-                  handleUpdate({
-                    replayTarget: e.target.value || undefined,
-                  })
-                }
-              >
-                <option value="">Select a step to replay...</option>
-                {allSteps
-                  .filter(s => s.order < localStep.order)
-                  .sort((a, b) => a.order - b.order)
-                  .map((s) => {
-                    const variableName = s.collect?.variableName || '';
-                    const label = `Step ${s.order + 1}: ${getStepTypeLabel(s.type)}${variableName ? ` - ${variableName}` : ''}`;
-                    return (
-                      <option key={s.id} value={s.id}>
-                        {label}
-                      </option>
-                    );
-                  })}
-              </Select>
-            ) : (
-              <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                No previous steps available. Replay steps must be added after other steps.
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Conditional Logic Editor */}
-      <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-        <div className="mb-3 flex items-center gap-2">
-          <Checkbox
-            id="enableConditionalLogic"
-            checked={!!localStep.conditionalLogic}
-            onChange={(e) => handleToggleConditionalLogic(e.target.checked)}
-          />
-          <Label htmlFor="enableConditionalLogic">
-            Enable Conditional Logic
-          </Label>
-        </div>
-        <p className="mb-3 text-xs text-gray-500">
-          Show this step only if certain conditions are met
-        </p>
-
-        {localStep.conditionalLogic && (
-          <div className="space-y-3">
-            <div>
-              <Label>Logic Operator</Label>
-              <Select
-                value={localStep.conditionalLogic.operator}
-                onChange={(e) =>
-                  handleUpdate({
-                    conditionalLogic: {
-                      ...localStep.conditionalLogic!,
-                      operator: e.target.value as LogicalOperator,
-                    },
-                  })
-                }
-              >
-                <option value={LogicalOperator.AND}>AND (all conditions must be true)</option>
-                <option value={LogicalOperator.OR}>OR (any condition can be true)</option>
-              </Select>
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <Label>Conditions</Label>
-                <Button size="xs" color="light" onClick={handleAddCondition}>
-                  <HiPlus className="mr-1 h-3 w-3" />
-                  Add Condition
-                </Button>
-              </div>
-
-              {localStep.conditionalLogic.showIf.map((condition, index) => (
-                <div key={index} className="mb-2 rounded border border-gray-200 p-3 dark:border-gray-700">
-                  <div className="mb-2 grid grid-cols-3 gap-2">
-                    <div>
-                      <Label className="text-xs">Variable Name</Label>
-                      {availableVariables.length > 0 ? (
-                        <Select
-                          sizing="sm"
-                          value={condition.variableName}
-                          onChange={(e) =>
-                            handleUpdateCondition(index, 'variableName', e.target.value)
-                          }
-                        >
-                          <option value="">Select variable...</option>
-                          {availableVariables.map((varName) => (
-                            <option key={varName} value={varName}>
-                              {varName}
-                            </option>
-                          ))}
-                        </Select>
-                      ) : (
-                        <div className="text-xs text-gray-500 italic py-1">
-                          No variables collected yet. Add steps with data collection first.
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label className="text-xs">Operator</Label>
-                      <Select
-                        sizing="sm"
-                        value={condition.operator}
-                        onChange={(e) =>
-                          handleUpdateCondition(index, 'operator', e.target.value)
-                        }
-                      >
-                        <option value={ConditionalOperator.EQUALS}>Equals</option>
-                        <option value={ConditionalOperator.NOT_EQUALS}>Not Equals</option>
-                        <option value={ConditionalOperator.CONTAINS}>Contains</option>
-                        <option value={ConditionalOperator.GREATER_THAN}>Greater Than</option>
-                        <option value={ConditionalOperator.LESS_THAN}>Less Than</option>
-                        <option value={ConditionalOperator.GREATER_THAN_OR_EQUAL}>
-                          Greater Than or Equal
-                        </option>
-                        <option value={ConditionalOperator.LESS_THAN_OR_EQUAL}>
-                          Less Than or Equal
-                        </option>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Value</Label>
-                      <TextInput
-                        sizing="sm"
-                        placeholder="e.g., 3"
-                        value={condition.value}
-                        onChange={(e) =>
-                          handleUpdateCondition(index, 'value', e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
+            <div className="space-y-2">
+              {localStep.input.choices?.map((choice, index) => (
+                <div key={choice.id} className="flex gap-2">
+                  <TextInput
+                    placeholder="Label"
+                    value={choice.label}
+                    onChange={(e) =>
+                      handleUpdateChoice(index, "label", e.target.value)
+                    }
+                    className="flex-1"
+                  />
+                  <TextInput
+                    placeholder="Value"
+                    value={String(choice.value)}
+                    onChange={(e) =>
+                      handleUpdateChoice(index, "value", e.target.value)
+                    }
+                    className="flex-1"
+                  />
                   <Button
-                    size="xs"
+                    size="sm"
                     color="failure"
-                    onClick={() => handleDeleteCondition(index)}
+                    onClick={() => handleDeleteChoice(index)}
                   >
-                    <HiTrash className="mr-1 h-3 w-3" />
-                    Remove
+                    <HiTrash className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
+
+        {/* Data Type for text input */}
+        {localStep.input?.type === "text" && (
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="dataType">Input Type</Label>
+            </div>
+            <Select
+              id="dataType"
+              value={localStep.input.dataType || DataType.FREETEXT}
+              onChange={(e) =>
+                handleUpdate({
+                  input: {
+                    ...localStep.input!,
+                    dataType: e.target.value as DataType,
+                  },
+                })
+              }
+            >
+              {Object.values(DataType).map((type) => (
+                <option key={type} value={type}>
+                  {getDataTypeLabel(type)}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
+
+        {/* Placeholder for text input */}
+        {localStep.input?.type === "text" && (
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="placeholder">Placeholder</Label>
+            </div>
+            <TextInput
+              id="placeholder"
+              placeholder="Enter placeholder text..."
+              value={localStep.input.placeholder || ""}
+              onChange={(e) =>
+                handleUpdate({
+                  input: { ...localStep.input!, placeholder: e.target.value },
+                })
+              }
+            />
+          </div>
+        )}
+
+        {/* Data Collection */}
+        {localStep.input?.type !== "none" && (
+          <div
+            data-tour="data-collection"
+            className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+          >
+            <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
+              Data Collection
+            </h3>
+
+            <div className="mb-4 flex items-center gap-2">
+              <Checkbox
+                id="collectData"
+                checked={localStep.collect?.enabled || false}
+                onChange={(e) =>
+                  handleUpdate({
+                    collect: localStep.collect
+                      ? { ...localStep.collect, enabled: e.target.checked }
+                      : {
+                          enabled: e.target.checked,
+                          variableName: "",
+                          storageKey: "",
+                        },
+                  })
+                }
+              />
+              <Label htmlFor="collectData">Collect and store this data</Label>
+            </div>
+
+            {localStep.collect?.enabled && (
+              <div className="space-y-3">
+                <div>
+                  <div className="mb-2 block">
+                    <Label htmlFor="variableName">Variable Name</Label>
+                  </div>
+                  <TextInput
+                    id="variableName"
+                    placeholder="e.g., userName, userEmail"
+                    value={localStep.collect.variableName || ""}
+                    onChange={(e) =>
+                      handleUpdate({
+                        collect: {
+                          ...localStep.collect!,
+                          variableName: e.target.value,
+                          storageKey: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Use this name to reference the data: {"{"}
+                    {localStep.collect.variableName || "variableName"}
+                    {"}"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Replay Target Selector */}
+        {localStep.type === StepType.REPLAY && (
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
+              Replay Target
+            </h3>
+            <p className="mb-3 text-xs text-gray-500">
+              Select which previous step to replay when this step is executed
+            </p>
+
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="replayTarget">Target Step</Label>
+              </div>
+              {allSteps.filter((s) => s.order < localStep.order).length > 0 ? (
+                <Select
+                  id="replayTarget"
+                  value={localStep.replayTarget || ""}
+                  onChange={(e) =>
+                    handleUpdate({
+                      replayTarget: e.target.value || undefined,
+                    })
+                  }
+                >
+                  <option value="">Select a step to replay...</option>
+                  {allSteps
+                    .filter((s) => s.order < localStep.order)
+                    .sort((a, b) => a.order - b.order)
+                    .map((s) => {
+                      const variableName = s.collect?.variableName || "";
+                      const label = `Step ${s.order + 1}: ${getStepTypeLabel(s.type)}${variableName ? ` - ${variableName}` : ""}`;
+                      return (
+                        <option key={s.id} value={s.id}>
+                          {label}
+                        </option>
+                      );
+                    })}
+                </Select>
+              ) : (
+                <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                  No previous steps available. Replay steps must be added after
+                  other steps.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Conditional Logic Editor */}
+        <div
+          data-tour="conditional-logic"
+          className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+        >
+          <div className="mb-3 flex items-center gap-2">
+            <Checkbox
+              id="enableConditionalLogic"
+              checked={!!localStep.conditionalLogic}
+              onChange={(e) => handleToggleConditionalLogic(e.target.checked)}
+            />
+            <Label htmlFor="enableConditionalLogic">
+              Enable Conditional Logic
+            </Label>
+          </div>
+          <p className="mb-3 text-xs text-gray-500">
+            Show this step only if certain conditions are met
+          </p>
+
+          {localStep.conditionalLogic && (
+            <div className="space-y-3">
+              <div>
+                <Label>Logic Operator</Label>
+                <Select
+                  value={localStep.conditionalLogic.operator}
+                  onChange={(e) =>
+                    handleUpdate({
+                      conditionalLogic: {
+                        ...localStep.conditionalLogic!,
+                        operator: e.target.value as LogicalOperator,
+                      },
+                    })
+                  }
+                >
+                  <option value={LogicalOperator.AND}>
+                    AND (all conditions must be true)
+                  </option>
+                  <option value={LogicalOperator.OR}>
+                    OR (any condition can be true)
+                  </option>
+                </Select>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <Label>Conditions</Label>
+                  <Button size="xs" color="light" onClick={handleAddCondition}>
+                    <HiPlus className="mr-1 h-3 w-3" />
+                    Add Condition
+                  </Button>
+                </div>
+
+                {localStep.conditionalLogic.showIf.map((condition, index) => (
+                  <div
+                    key={index}
+                    className="mb-2 rounded border border-gray-200 p-3 dark:border-gray-700"
+                  >
+                    <div className="mb-2 grid grid-cols-3 gap-2">
+                      <div>
+                        <Label className="text-xs">Variable Name</Label>
+                        {availableVariables.length > 0 ? (
+                          <Select
+                            sizing="sm"
+                            value={condition.variableName}
+                            onChange={(e) =>
+                              handleUpdateCondition(
+                                index,
+                                "variableName",
+                                e.target.value,
+                              )
+                            }
+                          >
+                            <option value="">Select variable...</option>
+                            {availableVariables.map((varName) => (
+                              <option key={varName} value={varName}>
+                                {varName}
+                              </option>
+                            ))}
+                          </Select>
+                        ) : (
+                          <div className="py-1 text-xs text-gray-500 italic">
+                            No variables collected yet. Add steps with data
+                            collection first.
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label className="text-xs">Operator</Label>
+                        <Select
+                          sizing="sm"
+                          value={condition.operator}
+                          onChange={(e) =>
+                            handleUpdateCondition(
+                              index,
+                              "operator",
+                              e.target.value,
+                            )
+                          }
+                        >
+                          <option value={ConditionalOperator.EQUALS}>
+                            Equals
+                          </option>
+                          <option value={ConditionalOperator.NOT_EQUALS}>
+                            Not Equals
+                          </option>
+                          <option value={ConditionalOperator.CONTAINS}>
+                            Contains
+                          </option>
+                          <option value={ConditionalOperator.GREATER_THAN}>
+                            Greater Than
+                          </option>
+                          <option value={ConditionalOperator.LESS_THAN}>
+                            Less Than
+                          </option>
+                          <option
+                            value={ConditionalOperator.GREATER_THAN_OR_EQUAL}
+                          >
+                            Greater Than or Equal
+                          </option>
+                          <option
+                            value={ConditionalOperator.LESS_THAN_OR_EQUAL}
+                          >
+                            Less Than or Equal
+                          </option>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Value</Label>
+                        <TextInput
+                          sizing="sm"
+                          placeholder="e.g., 3"
+                          value={condition.value}
+                          onChange={(e) =>
+                            handleUpdateCondition(
+                              index,
+                              "value",
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      size="xs"
+                      color="failure"
+                      onClick={() => handleDeleteCondition(index)}
+                    >
+                      <HiTrash className="mr-1 h-3 w-3" />
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
