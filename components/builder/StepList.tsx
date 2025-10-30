@@ -2,7 +2,7 @@
 
 import { HiTrash, HiDuplicate, HiMenu } from 'react-icons/hi';
 import { Step, StepType } from '@/types';
-import { getStepTypeLabel, getStepIcon } from '@/lib/utils/stepHelpers';
+import { getStepTypeLabel } from '@/lib/utils/stepHelpers';
 import { v4 as uuidv4 } from 'uuid';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -61,9 +61,8 @@ function SortableStepItem({
       }`}
       onClick={() => onSelectStep(step.id)}
     >
-      {/* Action buttons row at top */}
-      <div className="mb-2 flex items-center justify-between">
-        {/* Drag handle on the left */}
+      <div className="flex items-start gap-2">
+        {/* Drag handle */}
         <button
           ref={setActivatorNodeRef}
           {...listeners}
@@ -75,48 +74,51 @@ function SortableStepItem({
           <HiMenu className="h-4 w-4" />
         </button>
 
-        {/* Action buttons on the right */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClone(index);
-            }}
-            className="rounded p-1 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
-            title="Clone step"
-          >
-            <HiDuplicate className="h-4 w-4" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm('Delete this step?')) {
-                onDelete(step.id);
-              }
-            }}
-            className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-            title="Delete"
-          >
-            <HiTrash className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Content below */}
-      <div className="flex items-start gap-2">
-        <span className="text-2xl">{getStepIcon(step.type)}</span>
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-500">
-              Step {index + 1}
-            </span>
-            <span className="text-xs text-gray-400">
-              {getStepTypeLabel(step.type)}
-            </span>
+          {/* Header row with step number, type, and action buttons */}
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-500">
+                Step {index + 1}
+              </span>
+              <span className="text-xs text-gray-400">
+                {getStepTypeLabel(step.type)}
+              </span>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClone(index);
+                }}
+                className="rounded p-1 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                title="Clone step"
+              >
+                <HiDuplicate className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm('Delete this step?')) {
+                    onDelete(step.id);
+                  }
+                }}
+                className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                title="Delete"
+              >
+                <HiTrash className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-          <p className="mt-1 line-clamp-2 text-sm text-gray-700 dark:text-gray-300">
+
+          {/* Message content */}
+          <p className="line-clamp-2 text-sm text-gray-700 dark:text-gray-300">
             {step.display.messages[0]?.text || 'Empty message'}
           </p>
+
+          {/* Variable and replay badges */}
           <div className="mt-1 flex flex-wrap gap-1">
             {step.collect?.variableName && (
               <span className="inline-block rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300">
@@ -127,11 +129,11 @@ function SortableStepItem({
               const targetStep = steps.find(s => s.id === step.replayTarget);
               return targetStep ? (
                 <span className="inline-block rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                  🔄 Replay: Step {targetStep.order + 1}
+                  Replay: Step {targetStep.order + 1}
                 </span>
               ) : (
                 <span className="inline-block rounded bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900 dark:text-red-300">
-                  🔄 Replay: Invalid target
+                  Replay: Invalid target
                 </span>
               );
             })()}

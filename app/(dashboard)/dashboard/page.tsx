@@ -14,7 +14,6 @@ import { getCurrentUser } from '@/lib/auth/session';
 import connectDB from '@/lib/db/mongodb';
 import { Form, Submission } from '@/lib/db/models';
 import { FormStatus, SubmissionStatus } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
 import DashboardClient from './DashboardClient';
 
 // Force dynamic rendering - always fetch fresh data
