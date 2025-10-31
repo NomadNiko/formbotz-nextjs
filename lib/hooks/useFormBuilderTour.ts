@@ -1,7 +1,16 @@
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
+import { StepType } from "@/types";
 
-export const useFormBuilderTour = () => {
+interface TourCallbacks {
+  onAddStep: (type: StepType) => void;
+  onUpdateStepMessage: (message: string) => void;
+  onToggleDataCollection: (enabled: boolean, variableName?: string) => void;
+  onToggleConditionalLogic: (enabled: boolean) => void;
+  onAddCondition: (variableName: string, operator: string, value: string) => void;
+}
+
+export const useFormBuilderTour = (callbacks: TourCallbacks) => {
   const startTour = () => {
     const driverObj = driver({
       showProgress: true,
@@ -9,156 +18,187 @@ export const useFormBuilderTour = () => {
         {
           popover: {
             title: "Welcome to the Form Builder! 🎯",
-            description:
-              "Let's build a simple form together. We'll create a form that asks if someone wants to provide their name, then shows different messages based on their answer.",
-          },
-        },
-        {
-          element: '[data-tour="add-step-button"]',
-          popover: {
-            title: "Adding Steps",
-            description:
-              "Click this button to add steps to your form. Let's start by adding a Yes/No question.",
-            side: "right",
+            description: "Let's build a simple form together. I'll create the steps for you and show you how everything works. Click Next to begin!",
+            onNextClick: () => {
+              driverObj.moveNext();
+            },
           },
         },
         {
           popover: {
-            title: "Step 1: Choose Yes/No",
-            description:
-              "From the menu that appears, select 'Yes/No Question'. This will ask users if they want to provide their name.",
+            title: "Step 1: Adding a Yes/No Question",
+            description: "First, I'll add a Yes/No question step. Watch as it appears in the sidebar!",
+            onNextClick: () => {
+              callbacks.onAddStep(StepType.YES_NO);
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="message-input"]',
           popover: {
-            title: "Edit the Message",
-            description:
-              "Change the message to: 'Would you like to provide your name?' This is what users will see.",
+            title: "Setting the Message",
+            description: "Now I'll set the message to ask if they want to provide their name.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onUpdateStepMessage("Would you like to provide your name?");
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="data-collection"]',
           popover: {
-            title: "Collect the Response",
-            description:
-              "Enable 'Collect and store this data' and set the variable name to 'wantsName'. We'll use this to show different steps based on their answer.",
+            title: "Collecting the Response",
+            description: "I'll enable data collection and save this as 'wantsName'. This variable will control which steps show next.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onToggleDataCollection(true, "wantsName");
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
-          element: '[data-tour="add-step-button"]',
           popover: {
-            title: "Add Name Input Step",
-            description:
-              "Now add a 'String Input' step. This will collect the user's name if they said yes.",
-            side: "right",
+            title: "Step 2: Name Input (Conditional)",
+            description: "Next, I'll add a String Input step to collect their name - but only if they said yes!",
+            onNextClick: () => {
+              callbacks.onAddStep(StepType.STRING_INPUT);
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="message-input"]',
           popover: {
-            title: "Ask for Their Name",
-            description: "Set the message to: 'Great! What's your name?'",
+            title: "Asking for the Name",
+            description: "Setting the message to ask for their name.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onUpdateStepMessage("Great! What's your name?");
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="data-collection"]',
           popover: {
-            title: "Store the Name",
-            description:
-              "Enable data collection and set the variable name to 'userName'. We'll use this to personalize the greeting.",
+            title: "Storing the Name",
+            description: "I'll save this as 'userName' so we can use it later for personalization.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onToggleDataCollection(true, "userName");
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="conditional-logic"]',
           popover: {
-            title: "Add Conditional Logic",
-            description:
-              "Enable conditional logic. Set it to show this step only if 'wantsName' equals 'true'. This ensures we only ask for their name if they said yes!",
+            title: "Adding Conditional Logic",
+            description: "Here's the magic! I'll add a condition so this step only shows if they answered 'Yes' (wantsName = true).",
             side: "left",
+            onNextClick: () => {
+              callbacks.onToggleConditionalLogic(true);
+              setTimeout(() => {
+                callbacks.onAddCondition("wantsName", "equals", "true");
+                setTimeout(() => driverObj.moveNext(), 300);
+              }, 300);
+            },
           },
         },
         {
-          element: '[data-tour="add-step-button"]',
           popover: {
-            title: "Add Greeting Step",
-            description:
-              "Add an 'Info Message' step. This will show a personalized greeting using their name.",
-            side: "right",
+            title: "Step 3: Personalized Greeting",
+            description: "Now I'll add an Info step with a personalized greeting using their name.",
+            onNextClick: () => {
+              callbacks.onAddStep(StepType.INFO);
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="message-input"]',
           popover: {
-            title: "Personalize with Variables",
-            description:
-              "Set the message to: 'Thanks {userName}, nice to meet you!' The {userName} will be replaced with their actual name.",
+            title: "Variable Interpolation",
+            description: "Watch this! I'll use {userName} in the message - it will be replaced with their actual name.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onUpdateStepMessage("Thanks {userName}, nice to meet you!");
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="conditional-logic"]',
           popover: {
-            title: "Show Only If They Said Yes",
-            description:
-              "Enable conditional logic and set it to show if 'wantsName' equals 'true'. This greeting only appears if they provided their name.",
+            title: "Conditional Greeting",
+            description: "This greeting should also only show if they said yes.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onToggleConditionalLogic(true);
+              setTimeout(() => {
+                callbacks.onAddCondition("wantsName", "equals", "true");
+                setTimeout(() => driverObj.moveNext(), 300);
+              }, 300);
+            },
           },
         },
         {
-          element: '[data-tour="add-step-button"]',
           popover: {
-            title: "Add Dismissal Step",
-            description:
-              "Add another 'Info Message' step. This will show if they said no to providing their name.",
-            side: "right",
+            title: "Step 4: Polite Dismissal",
+            description: "Finally, I'll add a message for people who said no.",
+            onNextClick: () => {
+              callbacks.onAddStep(StepType.INFO);
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="message-input"]',
           popover: {
-            title: "Polite Dismissal",
-            description:
-              "Set the message to: 'Okay, no worries! Thanks for stopping by.'",
+            title: "Friendly Message",
+            description: "Setting a polite message for those who declined.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onUpdateStepMessage("Okay, no worries! Thanks for stopping by.");
+              setTimeout(() => driverObj.moveNext(), 300);
+            },
           },
         },
         {
           element: '[data-tour="conditional-logic"]',
           popover: {
-            title: "Show Only If They Said No",
-            description:
-              "Enable conditional logic and set it to show if 'wantsName' equals 'false'. This message only appears if they declined to share their name.",
+            title: "Opposite Condition",
+            description: "This time, the condition is wantsName = false, so it only shows if they said no.",
             side: "left",
+            onNextClick: () => {
+              callbacks.onToggleConditionalLogic(true);
+              setTimeout(() => {
+                callbacks.onAddCondition("wantsName", "equals", "false");
+                setTimeout(() => driverObj.moveNext(), 300);
+              }, 300);
+            },
           },
         },
         {
           element: '[data-tour="save-button"]',
           popover: {
             title: "Save Your Work",
-            description:
-              "Always save your form after making changes. The button will be highlighted when there are unsaved changes.",
+            description: "Now you can save this form! The button is highlighted because there are unsaved changes.",
             side: "bottom",
-          },
-        },
-        {
-          element: '[data-tour="preview-button"]',
-          popover: {
-            title: "Test Your Form",
-            description:
-              "After publishing, use the Preview button to test your form and see how the conditional logic works in action!",
-            side: "bottom",
+            onNextClick: () => {
+              driverObj.moveNext();
+            },
           },
         },
         {
           popover: {
             title: "You're All Set! 🎉",
-            description:
-              "You've learned the basics of building conditional forms! Try creating more complex flows with multiple conditions, variable interpolation, and different step types.",
+            description: "I've created a complete conditional form for you! Save it, publish it, and test it with the Preview button. Try modifying the steps or creating your own forms with different logic!",
+            onNextClick: () => {
+              driverObj.destroy();
+            },
           },
         },
       ],

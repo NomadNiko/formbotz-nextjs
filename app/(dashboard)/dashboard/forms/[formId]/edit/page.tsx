@@ -75,7 +75,66 @@ export default function FormEditorPage() {
   const [newFormName, setNewFormName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"form" | "widget">("form");
-  const { startTour } = useFormBuilderTour();
+  
+  const { startTour } = useFormBuilderTour({
+    onAddStep: (type: StepType) => {
+      if (!form) return;
+      const newStep = createStepTemplate(type, form.steps.length);
+      setForm({ ...form, steps: [...form.steps, newStep] });
+      setSelectedStepId(newStep.id);
+    },
+    onUpdateStepMessage: (message: string) => {
+      if (!form || !selectedStepId) return;
+      setForm({
+        ...form,
+        steps: form.steps.map(s => 
+          s.id === selectedStepId 
+            ? { ...s, display: { ...s.display, messages: [{ ...s.display.messages[0], text: message }] } }
+            : s
+        )
+      });
+    },
+    onToggleDataCollection: (enabled: boolean, variableName?: string) => {
+      if (!form || !selectedStepId) return;
+      setForm({
+        ...form,
+        steps: form.steps.map(s => 
+          s.id === selectedStepId 
+            ? { ...s, collect: enabled ? { enabled: true, variableName: variableName || '', storageKey: variableName || '' } : undefined }
+            : s
+        )
+      });
+    },
+    onToggleConditionalLogic: (enabled: boolean) => {
+      if (!form || !selectedStepId) return;
+      setForm({
+        ...form,
+        steps: form.steps.map(s => 
+          s.id === selectedStepId 
+            ? { ...s, conditionalLogic: enabled ? { showIf: [], operator: 'AND' as const } : undefined }
+            : s
+        )
+      });
+    },
+    onAddCondition: (variableName: string, operator: string, value: string) => {
+      if (!form || !selectedStepId) return;
+      setForm({
+        ...form,
+        steps: form.steps.map(s => {
+          if (s.id === selectedStepId && s.conditionalLogic) {
+            return {
+              ...s,
+              conditionalLogic: {
+                ...s.conditionalLogic,
+                showIf: [...s.conditionalLogic.showIf, { variableName, operator: operator as any, value }]
+              }
+            };
+          }
+          return s;
+        })
+      });
+    },
+  });
 
   useEffect(() => {
     fetchForm();
