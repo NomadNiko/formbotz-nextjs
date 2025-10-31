@@ -449,15 +449,6 @@ export default function FormEditorPage() {
         </div>
 
         <div className="flex gap-2">
-          <Button
-            color="light"
-            size="sm"
-            onClick={startTour}
-            title="Start interactive tutorial"
-          >
-            <HiQuestionMarkCircle className="mr-2 h-4 w-4" />
-            Tutorial
-          </Button>
           {form.status === "published" && (
             <Link href={`/chat/${form.publicUrl}`} target="_blank">
               <Button
