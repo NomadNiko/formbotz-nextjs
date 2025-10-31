@@ -358,7 +358,18 @@ export default function ChatInterface({ publicUrl, mode, skipPasswordProtection 
     return (
       <div className={`relative ${containerClass}`}>
         <div className="flex items-center justify-center bg-gray-50 p-8 dark:bg-gray-900 h-full">
-          <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 relative">
+            {mode === 'widget' && onClose && (
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                aria-label="Close"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {form?.displayName || form?.name || 'Conversational Form'}
             </h2>
@@ -425,17 +436,29 @@ export default function ChatInterface({ publicUrl, mode, skipPasswordProtection 
             <h1 className="text-lg font-bold text-gray-900 dark:text-white">
               {form?.displayName || form?.name || 'Conversational Form'}
             </h1>
-            {mode === 'widget' && onClose && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={onClose}
+                onClick={() => window.location.reload()}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                aria-label="Close"
+                aria-label="Refresh form"
+                title="Start over"
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
-            )}
+              {mode === 'widget' && onClose && (
+                <button
+                  onClick={onClose}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  aria-label="Close"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
           {form?.settings?.enableProgressBar && !isComplete && (
             <div className="mt-2">
