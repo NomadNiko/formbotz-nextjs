@@ -39,7 +39,7 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
-import { Form as IForm, Step, StepType, ConditionalOperator } from "@/types";
+import { Form as IForm, Step, StepType, ConditionalOperator, LogicalOperator } from "@/types";
 import StepList from "@/components/builder/StepList";
 import StepEditor from "@/components/builder/StepEditor";
 import FormSettings from "@/components/builder/FormSettings";
@@ -111,7 +111,7 @@ export default function FormEditorPage() {
         ...form,
         steps: form.steps.map(s => 
           s.id === selectedStepId 
-            ? { ...s, conditionalLogic: enabled ? { showIf: [], operator: 'AND' as const } : undefined }
+            ? { ...s, conditionalLogic: enabled ? { showIf: [], operator: LogicalOperator.AND } : undefined }
             : s
         )
       });
