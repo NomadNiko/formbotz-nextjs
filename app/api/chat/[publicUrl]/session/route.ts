@@ -43,6 +43,7 @@ export async function POST(
             form: {
               _id: form._id,
               name: form.name,
+              displayName: form.displayName,
               settings: form.settings,
               steps: form.steps,
             },
@@ -64,6 +65,7 @@ export async function POST(
         form: {
           _id: form._id,
           name: form.name,
+          displayName: form.displayName,
           settings: form.settings,
           steps: form.steps,
         },
